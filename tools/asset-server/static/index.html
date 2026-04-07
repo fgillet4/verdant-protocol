@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Verdant Protocol — Asset Studio</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#060d06;color:#c8e6c9;font-family:'Courier New',monospace;font-size:12px;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+a{color:#76ff03;text-decoration:none}
+
+/* ── Header ── */
+#header{background:rgba(5,12,5,0.95);border-bottom:1px solid rgba(76,175,80,0.2);padding:10px 20px;display:flex;align-items:center;gap:16px;flex-shrink:0}
+#header h1{color:#76ff03;font-size:14px;font-weight:300;letter-spacing:0.3em;text-transform:uppercase}
+#status-dot{width:7px;height:7px;border-radius:50%;background:#ef5350;flex-shrink:0;margin-left:auto}
+#status-dot.ok{background:#76ff03}
+#status-label{font-size:10px;opacity:0.5;letter-spacing:0.1em}
+
+/* ── Layout ── */
+#layout{display:flex;flex:1;overflow:hidden}
+
+/* ── Sidebar ── */
+#sidebar{width:140px;background:rgba(4,10,4,0.9);border-right:1px solid rgba(76,175,80,0.15);display:flex;flex-direction:column;flex-shrink:0}
+.nav-item{padding:12px 14px;cursor:pointer;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;opacity:0.45;border-left:2px solid transparent;transition:all 0.1s}
+.nav-item:hover{opacity:0.8;background:rgba(76,175,80,0.05)}
+.nav-item.active{opacity:1;color:#76ff03;border-left-color:#76ff03;background:rgba(76,175,80,0.07)}
+
+/* ── Main ── */
+#main{flex:1;overflow:auto;padding:20px}
+.tab{display:none}
+.tab.active{display:block}
+
+/* ── Panel ── */
+.panel{background:rgba(5,12,5,0.7);border:1px solid rgba(76,175,80,0.18);border-radius:6px;padding:16px;margin-bottom:14px}
+.panel-title{font-size:9px;letter-spacing:0.18em;text-transform:uppercase;opacity:0.4;margin-bottom:12px}
+
+/* ── Buttons ── */
+.btn{display:inline-block;padding:5px 14px;border:1px solid rgba(76,175,80,0.4);border-radius:4px;cursor:pointer;font-family:inherit;font-size:10px;letter-spacing:0.08em;background:rgba(76,175,80,0.07);color:#c8e6c9;transition:all 0.1s}
+.btn:hover{background:rgba(76,175,80,0.18);border-color:#76ff03;color:#76ff03}
+.btn.danger{border-color:rgba(239,83,80,0.4);color:#ef9a9a}
+.btn.danger:hover{background:rgba(239,83,80,0.15);border-color:#ef5350;color:#ef5350}
+.btn.primary{border-color:#76ff03;color:#76ff03}
+.btn.primary:hover{background:rgba(118,255,3,0.1)}
+
+/* ── Inputs ── */
+input,select,textarea{background:rgba(0,0,0,0.4);border:1px solid rgba(76,175,80,0.25);border-radius:4px;color:#c8e6c9;font-family:inherit;font-size:11px;padding:5px 8px;outline:none;transition:border-color 0.1s}
+input:focus,select:focus,textarea:focus{border-color:rgba(76,175,80,0.6)}
+select option{background:#0a1a0a}
+label{font-size:9px;opacity:0.5;letter-spacing:0.1em;text-transform:uppercase;display:block;margin-bottom:4px}
+.field{margin-bottom:10px}
+
+/* ── Upload zone ── */
+#drop-zone{border:1px dashed rgba(76,175,80,0.3);border-radius:6px;padding:28px;text-align:center;cursor:pointer;transition:all 0.15s;margin-bottom:14px}
+#drop-zone:hover,#drop-zone.drag-over{border-color:#76ff03;background:rgba(76,175,80,0.05)}
+#drop-zone p{opacity:0.45;font-size:11px;margin-top:6px}
+#file-input{display:none}
+
+/* ── Asset grid ── */
+#asset-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.asset-card{background:rgba(5,12,5,0.8);border:1px solid rgba(76,175,80,0.15);border-radius:6px;padding:10px;cursor:pointer;transition:border-color 0.1s}
+.asset-card:hover{border-color:rgba(76,175,80,0.4)}
+.asset-card.selected{border-color:#76ff03}
+.asset-preview{width:100%;aspect-ratio:1;background:rgba(0,0,0,0.4);border-radius:4px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;font-size:28px;overflow:hidden;position:relative}
+.asset-preview canvas{width:100%!important;height:100%!important}
+.asset-name{font-size:10px;font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.asset-type{font-size:9px;opacity:0.45;margin-top:2px;text-transform:uppercase;letter-spacing:0.08em}
+.asset-size{font-size:9px;opacity:0.3;margin-top:1px}
+.asset-actions{display:flex;gap:4px;margin-top:8px}
+.asset-actions .btn{padding:3px 8px;font-size:9px}
+
+/* ── Type badge ── */
+.badge{display:inline-block;padding:1px 6px;border-radius:3px;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;font-weight:bold}
+.badge-enemy{background:rgba(239,83,80,0.2);color:#ef9a9a}
+.badge-item{background:rgba(76,175,80,0.2);color:#a5d6a7}
+.badge-npc{background:rgba(179,157,219,0.2);color:#ce93d8}
+.badge-structure{background:rgba(144,164,174,0.2);color:#b0bec5}
+.badge-terrain{background:rgba(141,110,99,0.2);color:#bcaaa4}
+.badge-effect{background:rgba(255,213,79,0.2);color:#fff176}
+.badge-misc{background:rgba(255,255,255,0.07);color:#888}
+
+/* ── Code output ── */
+#code-output{background:rgba(0,0,0,0.6);border:1px solid rgba(76,175,80,0.2);border-radius:4px;padding:12px;font-size:11px;white-space:pre;overflow:auto;max-height:400px;color:#a5d6a7;line-height:1.5}
+
+/* ── 3D Preview modal ── */
+#preview-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;align-items:center;justify-content:center}
+#preview-modal.open{display:flex}
+#preview-wrap{background:rgba(5,12,5,0.98);border:1px solid rgba(76,175,80,0.3);border-radius:8px;width:520px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column}
+#preview-header{padding:12px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(76,175,80,0.15)}
+#preview-title{flex:1;font-size:11px;color:#76ff03}
+#preview-canvas-wrap{flex:1;background:#020802;min-height:360px;position:relative}
+#preview-canvas-wrap canvas{display:block}
+#preview-close{cursor:pointer;opacity:0.5;font-size:14px}
+#preview-close:hover{opacity:1;color:#ef5350}
+
+/* ── Anim editor ── */
+.anim-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.anim-clip{flex:1;font-size:10px;opacity:0.6;overflow:hidden;text-overflow:ellipsis}
+.anim-row input{width:120px}
+
+/* ── World table ── */
+#world-table{width:100%;border-collapse:collapse}
+#world-table th{text-align:left;font-size:9px;opacity:0.4;letter-spacing:0.1em;text-transform:uppercase;padding:4px 8px;border-bottom:1px solid rgba(76,175,80,0.1)}
+#world-table td{padding:5px 8px;border-bottom:1px solid rgba(76,175,80,0.06);font-size:10px}
+#world-table tr:hover td{background:rgba(76,175,80,0.04)}
+
+/* ── Toast ── */
+#toast{position:fixed;top:20px;right:20px;background:rgba(5,12,5,0.97);border:1px solid rgba(76,175,80,0.4);border-radius:6px;padding:9px 16px;font-size:11px;z-index:2000;opacity:0;transition:opacity 0.2s;pointer-events:none}
+#toast.show{opacity:1}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(76,175,80,0.25);border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div id="header">
+  <div id="status-dot"></div>
+  <h1>Verdant Protocol — Asset Studio</h1>
+  <span id="status-label">connecting...</span>
+  <div style="flex:1"></div>
+  <a href="/scene-designer" style="font-size:9px;opacity:0.55;letter-spacing:0.1em;padding:3px 10px;border:1px solid rgba(76,175,80,0.2);border-radius:3px;color:#c8e6c9;text-decoration:none" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.55">Scene Designer →</a>
+  <a href="/quest-studio" style="font-size:9px;opacity:0.55;letter-spacing:0.1em;padding:3px 10px;border:1px solid rgba(76,175,80,0.2);border-radius:3px;color:#c8e6c9;text-decoration:none" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.55">Quest Studio →</a>
+  <span style="opacity:0.25;font-size:9px">` backtick = debug in-game · port 7432</span>
+</div>
+
+<div id="layout">
+  <!-- Sidebar -->
+  <div id="sidebar">
+    <div class="nav-item active" data-tab="assets">Assets</div>
+    <div class="nav-item" data-tab="codegen">Codegen</div>
+    <div class="nav-item" data-tab="animations">Animations</div>
+    <div class="nav-item" data-tab="world">World</div>
+    <div class="nav-item" data-tab="sounds">Sounds</div>
+    <div style="flex:1"></div>
+    <div class="nav-item" id="nav-info" style="font-size:8px;opacity:0.25" data-tab="">Info</div>
+  </div>
+
+  <!-- Main -->
+  <div id="main">
+
+    <!-- ── Assets tab ── -->
+    <div class="tab active" id="tab-assets">
+      <div class="panel">
+        <div class="panel-title">Upload Asset</div>
+        <div id="drop-zone">
+          <div style="font-size:24px;opacity:0.4">⬆</div>
+          <p>Drag &amp; drop GLB / GLTF / PNG / JPG here</p>
+          <p style="margin-top:6px">or <span style="color:#76ff03;cursor:pointer" onclick="document.getElementById('file-input').click()">browse files</span></p>
+        </div>
+        <input type="file" id="file-input" multiple accept=".glb,.gltf,.png,.jpg,.jpeg,.webp"/>
+        <div style="display:flex;gap:10px;align-items:flex-end">
+          <div class="field" style="flex:1">
+            <label>Asset Type</label>
+            <select id="upload-type">
+              <option value="misc">Misc</option>
+              <option value="enemy">Enemy</option>
+              <option value="item">Item</option>
+              <option value="npc">NPC</option>
+              <option value="structure">Structure</option>
+              <option value="terrain">Terrain</option>
+              <option value="effect">Effect</option>
+            </select>
+          </div>
+          <div class="field" style="flex:2">
+            <label>Display Name (optional)</label>
+            <input type="text" id="upload-name" placeholder="Auto-detected from filename"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title" style="display:flex;justify-content:space-between">
+          <span>Library</span>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="text" id="search" placeholder="Search..." style="width:140px;padding:3px 7px"/>
+            <select id="filter-type" style="padding:3px 7px">
+              <option value="">All types</option>
+              <option value="enemy">Enemy</option>
+              <option value="item">Item</option>
+              <option value="npc">NPC</option>
+              <option value="structure">Structure</option>
+              <option value="terrain">Terrain</option>
+              <option value="effect">Effect</option>
+              <option value="misc">Misc</option>
+            </select>
+            <span class="btn" onclick="loadAssets()">↺ Refresh</span>
+          </div>
+        </div>
+        <div id="asset-grid"></div>
+        <div id="no-assets" style="text-align:center;opacity:0.3;padding:28px;display:none">No assets yet. Upload a GLB to get started.</div>
+      </div>
+    </div>
+
+    <!-- ── Codegen tab ── -->
+    <div class="tab" id="tab-codegen">
+      <div class="panel">
+        <div class="panel-title">Boilerplate Generator</div>
+        <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+          <div class="field" style="flex:2">
+            <label>Asset</label>
+            <select id="cg-asset" style="width:100%"></select>
+          </div>
+          <div class="field" style="flex:1">
+            <label>Entity Type</label>
+            <select id="cg-type">
+              <option value="enemy">Enemy</option>
+              <option value="item">Item</option>
+              <option value="npc">NPC</option>
+              <option value="structure">Structure</option>
+              <option value="world-object">World Object</option>
+              <option value="skill-node">Skill Node</option>
+            </select>
+          </div>
+          <div class="field" style="display:flex;align-items:flex-end">
+            <span class="btn primary" onclick="generateCode()">Generate</span>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-size:9px;opacity:0.4;letter-spacing:0.1em;text-transform:uppercase">Output</span>
+          <span class="btn" onclick="copyCode()">Copy</span>
+        </div>
+        <pre id="code-output" style="min-height:80px">// Select an asset and entity type, then click Generate</pre>
+      </div>
+    </div>
+
+    <!-- ── Animations tab ── -->
+    <div class="tab" id="tab-animations">
+      <div class="panel">
+        <div class="panel-title">Animation Controller</div>
+        <div style="display:flex;gap:10px;margin-bottom:14px;align-items:flex-end">
+          <div class="field" style="flex:1">
+            <label>Asset (GLB)</label>
+            <select id="anim-asset" style="width:100%" onchange="loadAnimAsset()"></select>
+          </div>
+          <span class="btn primary" onclick="saveAnimations()">Save</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <div style="font-size:9px;opacity:0.35;letter-spacing:0.1em;text-transform:uppercase">Clip name (from Blender)</div>
+          <div style="font-size:9px;opacity:0.35;letter-spacing:0.1em;text-transform:uppercase">Semantic name (in-game)</div>
+        </div>
+        <div id="anim-rows"></div>
+        <div style="margin-top:10px">
+          <span class="btn" onclick="addAnimRow()">+ Add Mapping</span>
+        </div>
+        <div style="margin-top:16px;font-size:9px;opacity:0.3">
+          Semantic names: idle · walk · run · attack · death · hit · cast · cheer · emote
+        </div>
+      </div>
+    </div>
+
+    <!-- ── World tab ── -->
+    <div class="tab" id="tab-world">
+      <div class="panel">
+        <div class="panel-title">Place World Object</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+          <div class="field" style="flex:2">
+            <label>Asset</label>
+            <select id="wo-asset" style="width:100%"></select>
+          </div>
+          <div class="field">
+            <label>X</label>
+            <input type="number" id="wo-x" value="0" style="width:70px"/>
+          </div>
+          <div class="field">
+            <label>Y</label>
+            <input type="number" id="wo-y" value="0" style="width:70px"/>
+          </div>
+          <div class="field">
+            <label>Z</label>
+            <input type="number" id="wo-z" value="0" style="width:70px"/>
+          </div>
+          <div class="field">
+            <label>Rot Y°</label>
+            <input type="number" id="wo-ry" value="0" style="width:60px"/>
+          </div>
+          <div class="field">
+            <label>Scale</label>
+            <input type="number" id="wo-scale" value="1" step="0.1" style="width:60px"/>
+          </div>
+          <div class="field" style="display:flex;align-items:flex-end">
+            <span class="btn primary" onclick="addWorldObj()">Place</span>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title" style="display:flex;justify-content:space-between">
+          <span>Placed Objects (<span id="wo-count">0</span>)</span>
+          <span class="btn" onclick="exportWorld()">Export JSON</span>
+        </div>
+        <table id="world-table">
+          <thead><tr><th>Name</th><th>Type</th><th>Position</th><th>Scale</th><th></th></tr></thead>
+          <tbody id="world-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Sounds tab ── -->
+    <div class="tab" id="tab-sounds">
+      <div class="panel">
+        <div class="panel-title">Upload Audio</div>
+        <div id="audio-drop-zone" style="border:1px dashed rgba(76,175,80,0.3);border-radius:6px;padding:22px;text-align:center;cursor:pointer;transition:all 0.15s;margin-bottom:12px">
+          <div style="font-size:22px;opacity:0.35">♪</div>
+          <p style="opacity:0.45;font-size:11px;margin-top:5px">Drag &amp; drop MP3 / OGG / WAV here or <span style="color:#76ff03;cursor:pointer" onclick="document.getElementById('audio-input').click()">browse</span></p>
+        </div>
+        <input type="file" id="audio-input" multiple accept=".mp3,.ogg,.wav,.flac,.m4a,.webm" style="display:none"/>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <div class="field" style="flex:1">
+            <label>Type</label>
+            <select id="audio-type">
+              <option value="sfx">SFX</option>
+              <option value="music">Music</option>
+              <option value="ambient">Ambient</option>
+              <option value="voice">Voice</option>
+            </select>
+          </div>
+          <div class="field" style="flex:2">
+            <label>Scene / Biome (optional)</label>
+            <input type="text" id="audio-scene" placeholder="e.g. forest_canopy, combat, menu"/>
+          </div>
+          <div class="field">
+            <label>Loop</label>
+            <select id="audio-loop"><option value="false">No</option><option value="true">Yes</option></select>
+          </div>
+          <div class="field" style="width:70px">
+            <label>Volume</label>
+            <input type="number" id="audio-volume" value="1" min="0" max="2" step="0.1"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title" style="display:flex;justify-content:space-between">
+          <span>Sound Library</span>
+          <div style="display:flex;gap:8px">
+            <select id="audio-filter-type" style="padding:3px 7px;font-size:10px">
+              <option value="">All types</option>
+              <option value="sfx">SFX</option>
+              <option value="music">Music</option>
+              <option value="ambient">Ambient</option>
+              <option value="voice">Voice</option>
+            </select>
+            <span class="btn" onclick="loadSounds()">↺</span>
+            <span class="btn" onclick="exportSoundManifest()">Export Manifest</span>
+          </div>
+        </div>
+        <table id="sound-table" style="width:100%;border-collapse:collapse">
+          <thead><tr>
+            <th style="text-align:left;font-size:9px;opacity:0.38;letter-spacing:0.1em;padding:4px 8px;border-bottom:1px solid rgba(76,175,80,0.1);text-transform:uppercase">Name</th>
+            <th style="text-align:left;font-size:9px;opacity:0.38;letter-spacing:0.1em;padding:4px 8px;border-bottom:1px solid rgba(76,175,80,0.1);text-transform:uppercase">Type</th>
+            <th style="text-align:left;font-size:9px;opacity:0.38;letter-spacing:0.1em;padding:4px 8px;border-bottom:1px solid rgba(76,175,80,0.1);text-transform:uppercase">Scene</th>
+            <th style="text-align:left;font-size:9px;opacity:0.38;letter-spacing:0.1em;padding:4px 8px;border-bottom:1px solid rgba(76,175,80,0.1);text-transform:uppercase">Loop</th>
+            <th style="text-align:left;font-size:9px;opacity:0.38;letter-spacing:0.1em;padding:4px 8px;border-bottom:1px solid rgba(76,175,80,0.1);text-transform:uppercase">Vol</th>
+            <th style="padding:4px 8px;border-bottom:1px solid rgba(76,175,80,0.1)"></th>
+          </tr></thead>
+          <tbody id="sound-tbody"></tbody>
+        </table>
+        <div id="no-sounds" style="text-align:center;opacity:0.3;padding:24px;display:none">No sounds yet. Upload MP3/OGG/WAV to get started.</div>
+        <!-- hidden audio element for preview -->
+        <audio id="audio-preview" style="display:none"></audio>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+<!-- 3D Preview modal -->
+<div id="preview-modal">
+  <div id="preview-wrap">
+    <div id="preview-header">
+      <span id="preview-title">Model Preview</span>
+      <span id="preview-close" onclick="closePreview()">✕</span>
+    </div>
+    <div id="preview-canvas-wrap"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- Three.js for 3D preview -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/controls/OrbitControls.js"></script>
+
+<script>
+const API = ''   // same origin
+
+// ── State ───────────────────────────────────────────────────────────────────
+let assets = []
+let worldObjects = []
+let previewScene, previewRenderer, previewControls, previewAF
+
+// ── Init ────────────────────────────────────────────────────────────────────
+async function init() {
+  await checkConnection()
+  await loadAssets()
+  await loadWorldObjects()
+  setInterval(checkConnection, 5000)
+}
+
+async function checkConnection() {
+  try {
+    const r = await fetch(`${API}/api/info`)
+    if (r.ok) {
+      document.getElementById('status-dot').className = 'ok'
+      const d = await r.json()
+      document.getElementById('status-label').textContent = `${d.assets} assets · ${d.world_objects} objects`
+    }
+  } catch { document.getElementById('status-dot').className = '' }
+}
+
+// ── Navigation ──────────────────────────────────────────────────────────────
+document.querySelectorAll('.nav-item[data-tab]').forEach(el => {
+  el.addEventListener('click', () => {
+    if (!el.dataset.tab) return
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'))
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
+    el.classList.add('active')
+    document.getElementById('tab-' + el.dataset.tab)?.classList.add('active')
+    if (el.dataset.tab === 'codegen') populateCodegenAssets()
+    if (el.dataset.tab === 'animations') populateAnimAssets()
+    if (el.dataset.tab === 'world') populateWorldAssets()
+  })
+})
+
+// ── Assets ──────────────────────────────────────────────────────────────────
+async function loadAssets() {
+  const r = await fetch(`${API}/api/assets`)
+  assets = await r.json()
+  renderGrid()
+}
+
+function renderGrid() {
+  const query = document.getElementById('search').value.toLowerCase()
+  const type  = document.getElementById('filter-type').value
+  const grid  = document.getElementById('asset-grid')
+  const none  = document.getElementById('no-assets')
+  const filtered = assets.filter(a =>
+    (!type || a.type === type) &&
+    (!query || a.display_name.toLowerCase().includes(query) || a.filename.toLowerCase().includes(query))
+  )
+  grid.innerHTML = ''
+  none.style.display = filtered.length ? 'none' : 'block'
+  filtered.forEach(a => grid.appendChild(makeCard(a)))
+}
+
+document.getElementById('search').addEventListener('input', renderGrid)
+document.getElementById('filter-type').addEventListener('change', renderGrid)
+
+function makeCard(a) {
+  const card = document.createElement('div')
+  card.className = 'asset-card'
+  card.dataset.id = a.id
+
+  const prev = document.createElement('div')
+  prev.className = 'asset-preview'
+  prev.textContent = a.ext === '.glb' || a.ext === '.gltf' ? '⬡' : '🖼'
+  prev.style.fontSize = '32px'
+  prev.style.opacity = '0.3'
+
+  card.innerHTML = `
+    <div class="asset-name">${esc(a.display_name)}</div>
+    <div class="asset-type"><span class="badge badge-${a.type}">${a.type}</span> &nbsp;${a.ext}</div>
+    <div class="asset-size">${fmtSize(a.size)}</div>
+    <div class="asset-actions">
+      ${(a.ext==='.glb'||a.ext==='.gltf') ? `<span class="btn" onclick="openPreview('${a.id}')">3D</span>` : ''}
+      <span class="btn" onclick="openCodegen('${a.id}')">code</span>
+      <span class="btn danger" onclick="deleteAsset('${a.id}')">del</span>
+    </div>
+  `
+  card.prepend(prev)
+  return card
+}
+
+async function deleteAsset(id) {
+  if (!confirm('Delete this asset?')) return
+  await fetch(`${API}/api/assets/${id}`, { method: 'DELETE' })
+  await loadAssets()
+  toast('Asset deleted')
+}
+
+// ── Upload ───────────────────────────────────────────────────────────────────
+const dropZone  = document.getElementById('drop-zone')
+const fileInput = document.getElementById('file-input')
+
+dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('drag-over') })
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'))
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('drag-over')
+  uploadFiles(Array.from(e.dataTransfer.files))
+})
+dropZone.addEventListener('click', () => fileInput.click())
+fileInput.addEventListener('change', () => uploadFiles(Array.from(fileInput.files)))
+
+async function uploadFiles(files) {
+  const type = document.getElementById('upload-type').value
+  const name = document.getElementById('upload-name').value.trim()
+  for (const file of files) {
+    const fd = new FormData()
+    fd.append('file', file)
+    fd.append('asset_type', type)
+    if (name) fd.append('display_name', name)
+    const r = await fetch(`${API}/api/assets/upload`, { method: 'POST', body: fd })
+    if (!r.ok) { toast('Upload failed: ' + (await r.text()), true); continue }
+    toast(`Uploaded: ${file.name}`)
+  }
+  document.getElementById('upload-name').value = ''
+  await loadAssets()
+}
+
+// ── 3D Preview ───────────────────────────────────────────────────────────────
+function openPreview(id) {
+  const a = assets.find(x => x.id === id)
+  if (!a) return
+  document.getElementById('preview-title').textContent = a.display_name
+  document.getElementById('preview-modal').classList.add('open')
+  initPreviewScene(id)
+}
+
+function closePreview() {
+  document.getElementById('preview-modal').classList.remove('open')
+  if (previewAF) { cancelAnimationFrame(previewAF); previewAF = null }
+  if (previewRenderer) { previewRenderer.dispose(); previewRenderer = null }
+  document.getElementById('preview-canvas-wrap').innerHTML = ''
+}
+
+function initPreviewScene(id) {
+  const wrap = document.getElementById('preview-canvas-wrap')
+  wrap.innerHTML = ''
+  const w = wrap.clientWidth || 520, h = 360
+
+  previewScene    = new THREE.Scene()
+  previewScene.background = new THREE.Color(0x020802)
+
+  const camera = new THREE.PerspectiveCamera(50, w / h, 0.01, 200)
+  camera.position.set(3, 2, 3)
+
+  previewRenderer = new THREE.WebGLRenderer({ antialias: true })
+  previewRenderer.setSize(w, h)
+  previewRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+  previewRenderer.outputEncoding = THREE.sRGBEncoding
+  previewRenderer.toneMapping    = THREE.ACESFilmicToneMapping
+  wrap.appendChild(previewRenderer.domElement)
+
+  previewControls = new THREE.OrbitControls(camera, previewRenderer.domElement)
+  previewControls.enableDamping = true
+
+  // Lights
+  previewScene.add(new THREE.AmbientLight(0xffffff, 0.6))
+  const dir = new THREE.DirectionalLight(0xffffff, 1.2)
+  dir.position.set(5, 8, 5)
+  previewScene.add(dir)
+
+  // Grid
+  previewScene.add(new THREE.GridHelper(10, 10, 0x1a2e1a, 0x1a2e1a))
+
+  // Load GLB
+  const loader = new THREE.GLTFLoader()
+  loader.load(`${API}/api/assets/${id}/file`, gltf => {
+    const model = gltf.scene
+    // Auto-center
+    const box = new THREE.Box3().setFromObject(model)
+    const center = box.getCenter(new THREE.Vector3())
+    const size   = box.getSize(new THREE.Vector3()).length()
+    model.position.sub(center)
+    camera.position.set(size, size * 0.8, size)
+    previewControls.update()
+    previewScene.add(model)
+  }, undefined, err => console.error('GLB load error', err))
+
+  const animate = () => {
+    previewAF = requestAnimationFrame(animate)
+    previewControls.update()
+    previewRenderer.render(previewScene, camera)
+  }
+  animate()
+}
+
+document.getElementById('preview-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('preview-modal')) closePreview()
+})
+
+// ── Codegen ──────────────────────────────────────────────────────────────────
+function populateCodegenAssets() {
+  const sel = document.getElementById('cg-asset')
+  sel.innerHTML = assets.map(a => `<option value="${a.id}">${esc(a.display_name)} (${a.type})</option>`).join('')
+}
+
+function openCodegen(id) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'))
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
+  document.querySelector('[data-tab="codegen"]').classList.add('active')
+  document.getElementById('tab-codegen').classList.add('active')
+  populateCodegenAssets()
+  document.getElementById('cg-asset').value = id
+  generateCode()
+}
+
+async function generateCode() {
+  const asset_id    = document.getElementById('cg-asset').value
+  const entity_type = document.getElementById('cg-type').value
+  if (!asset_id) return
+  const r = await fetch(`${API}/api/codegen`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ asset_id, entity_type }),
+  })
+  if (!r.ok) { toast('Codegen failed', true); return }
+  const d = await r.json()
+  document.getElementById('code-output').textContent = d.code
+}
+
+function copyCode() {
+  const code = document.getElementById('code-output').textContent
+  navigator.clipboard.writeText(code).then(() => toast('Copied!'))
+}
+
+// ── Animations ───────────────────────────────────────────────────────────────
+let currentAnimAsset = null
+
+function populateAnimAssets() {
+  const sel = document.getElementById('anim-asset')
+  const glbs = assets.filter(a => a.ext === '.glb' || a.ext === '.gltf')
+  sel.innerHTML = glbs.map(a => `<option value="${a.id}">${esc(a.display_name)}</option>`).join('')
+  if (glbs.length) loadAnimAsset()
+}
+
+async function loadAnimAsset() {
+  const id = document.getElementById('anim-asset').value
+  if (!id) return
+  currentAnimAsset = id
+  const r = await fetch(`${API}/api/animations/${id}`)
+  const mapping = await r.json()
+  renderAnimRows(mapping)
+}
+
+function renderAnimRows(mapping) {
+  const rows = document.getElementById('anim-rows')
+  rows.innerHTML = ''
+  const entries = Object.entries(mapping)
+  if (!entries.length) {
+    addAnimRow('', '')
+  } else {
+    entries.forEach(([clip, semantic]) => addAnimRow(clip, semantic))
+  }
+}
+
+function addAnimRow(clip = '', semantic = '') {
+  const rows = document.getElementById('anim-rows')
+  const row  = document.createElement('div')
+  row.className = 'anim-row'
+  row.innerHTML = `
+    <input type="text" placeholder="Clip name from Blender" value="${esc(clip)}" class="anim-clip-input" style="flex:1"/>
+    <span style="opacity:0.3">→</span>
+    <input type="text" placeholder="idle / walk / attack…" value="${esc(semantic)}" class="anim-semantic-input" style="width:120px"/>
+    <span class="btn danger" style="padding:2px 7px;font-size:9px" onclick="this.parentElement.remove()">✕</span>
+  `
+  rows.appendChild(row)
+}
+
+async function saveAnimations() {
+  if (!currentAnimAsset) return
+  const mapping = {}
+  document.querySelectorAll('.anim-row').forEach(row => {
+    const clip     = row.querySelector('.anim-clip-input').value.trim()
+    const semantic = row.querySelector('.anim-semantic-input').value.trim()
+    if (clip && semantic) mapping[clip] = semantic
+  })
+  await fetch(`${API}/api/animations/${currentAnimAsset}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(mapping),
+  })
+  toast('Animation mapping saved')
+}
+
+// ── World ─────────────────────────────────────────────────────────────────────
+async function loadWorldObjects() {
+  const r = await fetch(`${API}/api/world`)
+  worldObjects = await r.json()
+  renderWorldTable()
+}
+
+function populateWorldAssets() {
+  const sel = document.getElementById('wo-asset')
+  sel.innerHTML = assets.map(a => `<option value="${a.id}">${esc(a.display_name)}</option>`).join('')
+}
+
+function renderWorldTable() {
+  const tbody = document.getElementById('world-tbody')
+  document.getElementById('wo-count').textContent = worldObjects.length
+  tbody.innerHTML = ''
+  worldObjects.forEach(o => {
+    const tr = document.createElement('tr')
+    const pos = o.position ?? {}
+    tr.innerHTML = `
+      <td>${esc(o.name ?? o.id)}</td>
+      <td><span class="badge badge-${o.type ?? 'misc'}">${o.type ?? 'misc'}</span></td>
+      <td style="font-size:9px;opacity:0.6">${(pos.x||0).toFixed(1)}, ${(pos.y||0).toFixed(1)}, ${(pos.z||0).toFixed(1)}</td>
+      <td>${o.scale ?? 1}</td>
+      <td><span class="btn danger" style="padding:2px 7px;font-size:9px" onclick="removeWorldObj('${o.id}')">✕</span></td>
+    `
+    tbody.appendChild(tr)
+  })
+}
+
+async function addWorldObj() {
+  const id = document.getElementById('wo-asset').value
+  const a  = assets.find(x => x.id === id)
+  if (!a) return
+  const obj = {
+    asset_id:  id,
+    name:      a.display_name,
+    type:      a.type,
+    modelPath: a.game_path ?? a.path,
+    position:  { x: +document.getElementById('wo-x').value, y: +document.getElementById('wo-y').value, z: +document.getElementById('wo-z').value },
+    rotation:  { y: +document.getElementById('wo-ry').value * Math.PI / 180 },
+    scale:     +document.getElementById('wo-scale').value,
+  }
+  await fetch(`${API}/api/world`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(obj) })
+  await loadWorldObjects()
+  toast('Object placed')
+}
+
+async function removeWorldObj(id) {
+  await fetch(`${API}/api/world/${id}`, { method: 'DELETE' })
+  await loadWorldObjects()
+}
+
+function exportWorld() {
+  const blob = new Blob([JSON.stringify(worldObjects, null, 2)], { type: 'application/json' })
+  const url  = URL.createObjectURL(blob)
+  const a    = document.createElement('a')
+  a.href = url; a.download = 'world_objects.json'; a.click()
+  URL.revokeObjectURL(url)
+}
+
+// ── Utils ─────────────────────────────────────────────────────────────────────
+function esc(s) { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
+function fmtSize(b) {
+  if (b < 1024) return b + ' B'
+  if (b < 1024*1024) return (b/1024).toFixed(1) + ' KB'
+  return (b/1024/1024).toFixed(2) + ' MB'
+}
+let _toastTimer
+function toast(msg, err=false) {
+  const el = document.getElementById('toast')
+  el.textContent = msg
+  el.style.borderColor = err ? 'rgba(239,83,80,0.5)' : 'rgba(76,175,80,0.4)'
+  el.style.color = err ? '#ef9a9a' : '#c8e6c9'
+  el.classList.add('show')
+  clearTimeout(_toastTimer)
+  _toastTimer = setTimeout(() => el.classList.remove('show'), 2500)
+}
+
+// ── Sounds ────────────────────────────────────────────────────────────────────
+let sounds = []
+
+async function loadSounds() {
+  const r = await fetch(`${API}/api/sounds`)
+  sounds = await r.json()
+  renderSoundTable()
+}
+
+const TYPE_COLOR_AUDIO = { sfx:'#c8e6c9', music:'#80cbc4', ambient:'#a5d6a7', voice:'#ce93d8' }
+
+function renderSoundTable() {
+  const filter = document.getElementById('audio-filter-type').value
+  const filtered = filter ? sounds.filter(s=>s.type===filter) : sounds
+  const tbody = document.getElementById('sound-tbody')
+  document.getElementById('no-sounds').style.display = filtered.length ? 'none' : 'block'
+  tbody.innerHTML = ''
+  filtered.forEach(s => {
+    const tr = document.createElement('tr')
+    const c = TYPE_COLOR_AUDIO[s.type] || '#c8e6c9'
+    tr.innerHTML = `
+      <td style="padding:5px 8px;border-bottom:1px solid rgba(76,175,80,0.06);font-size:10px">${esc(s.display_name)}<br><span style="font-size:8px;opacity:0.35">${esc(s.filename)}</span></td>
+      <td style="padding:5px 8px;border-bottom:1px solid rgba(76,175,80,0.06)"><span style="font-size:9px;color:${c};text-transform:uppercase;letter-spacing:0.07em">${s.type}</span></td>
+      <td style="padding:5px 8px;border-bottom:1px solid rgba(76,175,80,0.06);font-size:10px;opacity:0.6">${esc(s.scene||'—')}</td>
+      <td style="padding:5px 8px;border-bottom:1px solid rgba(76,175,80,0.06);font-size:10px">${s.loop?'<span style="color:#76ff03">✓</span>':'—'}</td>
+      <td style="padding:5px 8px;border-bottom:1px solid rgba(76,175,80,0.06);font-size:10px">${s.volume??1}</td>
+      <td style="padding:5px 8px;border-bottom:1px solid rgba(76,175,80,0.06)">
+        <div style="display:flex;gap:4px">
+          <span class="btn" style="padding:2px 8px;font-size:9px" onclick="previewSound('${s.path}')">▶</span>
+          <span class="btn" style="padding:2px 8px;font-size:9px" onclick="stopPreview()">■</span>
+          <span class="btn danger" style="padding:2px 8px;font-size:9px" onclick="deleteSound('${s.id}')">✕</span>
+        </div>
+      </td>
+    `
+    tbody.appendChild(tr)
+  })
+}
+
+const audioDrop = document.getElementById('audio-drop-zone')
+const audioInput = document.getElementById('audio-input')
+audioDrop.addEventListener('dragover', e => { e.preventDefault(); audioDrop.style.borderColor='#76ff03' })
+audioDrop.addEventListener('dragleave', () => { audioDrop.style.borderColor='rgba(76,175,80,0.3)' })
+audioDrop.addEventListener('drop', e => { e.preventDefault(); audioDrop.style.borderColor='rgba(76,175,80,0.3)'; uploadSounds(Array.from(e.dataTransfer.files)) })
+audioDrop.addEventListener('click', () => audioInput.click())
+audioInput.addEventListener('change', () => uploadSounds(Array.from(audioInput.files)))
+document.getElementById('audio-filter-type').addEventListener('change', renderSoundTable)
+
+async function uploadSounds(files) {
+  const type   = document.getElementById('audio-type').value
+  const scene  = document.getElementById('audio-scene').value.trim()
+  const loop   = document.getElementById('audio-loop').value === 'true'
+  const volume = +document.getElementById('audio-volume').value
+  for (const file of files) {
+    const fd = new FormData()
+    fd.append('file', file)
+    fd.append('sound_type', type)
+    if (scene) fd.append('scene', scene)
+    fd.append('loop', loop)
+    fd.append('volume', volume)
+    const r = await fetch(`${API}/api/sounds/upload`, { method:'POST', body:fd })
+    if (!r.ok) { toast('Upload failed: ' + file.name, true); continue }
+    toast(`Uploaded: ${file.name}`)
+  }
+  await loadSounds()
+}
+
+async function deleteSound(id) {
+  await fetch(`${API}/api/sounds/${id}`, { method:'DELETE' })
+  await loadSounds()
+  toast('Sound deleted')
+}
+
+function previewSound(path) {
+  const el = document.getElementById('audio-preview')
+  el.src = path; el.play()
+}
+function stopPreview() { document.getElementById('audio-preview').pause() }
+
+async function exportSoundManifest() {
+  const r = await fetch(`${API}/api/sounds/export`)
+  const manifest = await r.json()
+  const code = `// src/audio/SoundManifest.js — auto-generated by Asset Studio\nexport const SOUND_MANIFEST = ${JSON.stringify(manifest, null, 2)}\n`
+  const blob = new Blob([code], { type:'text/javascript' })
+  const url  = URL.createObjectURL(blob)
+  const a    = document.createElement('a'); a.href=url; a.download='SoundManifest.js'; a.click()
+  URL.revokeObjectURL(url)
+  toast('Manifest exported')
+}
+
+// Hook sounds loading into init
+const _origInit = init
+async function init() {
+  await _origInit()
+  await loadSounds()
+}
+
+init()
+</script>
+</body>
+</html>

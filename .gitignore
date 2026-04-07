@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+
+# Vite build output
+dist/
+.vite/
+
+# Generated files — regenerate with ./generate_codebase.sh
+codebase.md
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Database
+*.sql
+*.db
+*.sqlite
+
+# Logs
+*.log
+logs/
+
+# Test / coverage output
+coverage/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo

@@ -1,0 +1,29 @@
+{
+  "name": "verdant-protocol",
+  "version": "0.1.0",
+  "description": "Solarpunk browser MMORPG",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "server": "node server/index.js",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest",
+    "test:game": "node tools/game-test.js all",
+    "test:hud": "node tools/game-test.js hud",
+    "test:settings": "node tools/game-test.js settings"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "pg": "^8.11.3",
+    "phaser": "^3.90.0",
+    "socket.io": "^4.7.5",
+    "socket.io-client": "^4.7.5",
+    "three": "^0.169.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.169.0",
+    "playwright": "^1.59.1",
+    "vite": "^5.4.0"
+  }
+}

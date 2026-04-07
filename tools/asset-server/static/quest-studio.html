@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Quest Studio — Verdant Protocol</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#060d06;color:#c8e6c9;font-family:'Courier New',monospace;font-size:12px;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+
+/* ── Header ── */
+#header{background:rgba(5,12,5,0.97);border-bottom:1px solid rgba(76,175,80,0.2);padding:9px 18px;display:flex;align-items:center;gap:14px;flex-shrink:0}
+#header h1{color:#76ff03;font-size:13px;font-weight:300;letter-spacing:0.28em;text-transform:uppercase}
+.header-link{font-size:9px;opacity:0.4;letter-spacing:0.1em;cursor:pointer;padding:3px 8px;border:1px solid rgba(76,175,80,0.15);border-radius:3px}
+.header-link:hover{opacity:0.8;border-color:rgba(76,175,80,0.4)}
+.mode-btn{font-size:9px;letter-spacing:0.1em;padding:4px 12px;border:1px solid rgba(76,175,80,0.25);border-radius:3px;cursor:pointer;opacity:0.55;transition:all 0.1s}
+.mode-btn:hover,.mode-btn.active{opacity:1;border-color:#76ff03;color:#76ff03}
+
+/* ── Layout ── */
+#layout{display:flex;flex:1;overflow:hidden}
+
+/* ── Left sidebar ── */
+#sidebar{width:220px;background:rgba(4,10,4,0.92);border-right:1px solid rgba(76,175,80,0.13);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
+#sidebar-header{padding:10px 12px 6px;font-size:9px;opacity:0.35;letter-spacing:0.15em;text-transform:uppercase;border-bottom:1px solid rgba(76,175,80,0.1)}
+#sidebar-list{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(76,175,80,0.2) transparent}
+.sb-item{padding:9px 12px;cursor:pointer;border-left:2px solid transparent;transition:all 0.1s;font-size:11px}
+.sb-item:hover{background:rgba(76,175,80,0.05);border-left-color:rgba(76,175,80,0.3)}
+.sb-item.active{background:rgba(76,175,80,0.08);border-left-color:#76ff03;color:#76ff03}
+.sb-item-sub{font-size:9px;opacity:0.4;margin-top:2px;letter-spacing:0.04em}
+#sidebar-footer{padding:8px;border-top:1px solid rgba(76,175,80,0.1)}
+
+/* ── Center ── */
+#center{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative}
+
+/* ── Right panel ── */
+#props{width:260px;background:rgba(4,10,4,0.92);border-left:1px solid rgba(76,175,80,0.13);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
+#props-header{padding:10px 12px 6px;font-size:9px;opacity:0.35;letter-spacing:0.15em;text-transform:uppercase;border-bottom:1px solid rgba(76,175,80,0.1)}
+#props-body{flex:1;overflow-y:auto;padding:10px;scrollbar-width:thin;scrollbar-color:rgba(76,175,80,0.2) transparent}
+
+/* ── Shared form styles ── */
+.field{margin-bottom:10px}
+label{display:block;font-size:9px;opacity:0.4;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:3px}
+input,select,textarea{width:100%;background:rgba(0,0,0,0.45);border:1px solid rgba(76,175,80,0.2);border-radius:3px;color:#c8e6c9;font-family:inherit;font-size:11px;padding:5px 7px;outline:none;transition:border-color 0.1s}
+input:focus,select:focus,textarea:focus{border-color:rgba(76,175,80,0.55)}
+textarea{resize:vertical;min-height:62px;line-height:1.5}
+select option{background:#0a1a0a}
+
+.btn{display:inline-block;padding:4px 12px;border:1px solid rgba(76,175,80,0.35);border-radius:3px;cursor:pointer;font-family:inherit;font-size:10px;letter-spacing:0.07em;background:rgba(76,175,80,0.06);color:#c8e6c9;transition:all 0.1s;white-space:nowrap}
+.btn:hover{background:rgba(76,175,80,0.16);border-color:#76ff03;color:#76ff03}
+.btn.danger{border-color:rgba(239,83,80,0.35);color:#ef9a9a}
+.btn.danger:hover{background:rgba(239,83,80,0.14);border-color:#ef5350;color:#ef5350}
+.btn.primary{border-color:#76ff03;color:#76ff03}
+.btn.primary:hover{background:rgba(118,255,3,0.1)}
+.btn.sm{padding:2px 8px;font-size:9px}
+
+/* ── Quest editor ── */
+#quest-editor{flex:1;overflow-y:auto;padding:18px;scrollbar-width:thin;scrollbar-color:rgba(76,175,80,0.2) transparent}
+.section{background:rgba(5,12,5,0.7);border:1px solid rgba(76,175,80,0.16);border-radius:5px;padding:14px;margin-bottom:12px}
+.section-title{font-size:9px;opacity:0.38;letter-spacing:0.16em;text-transform:uppercase;margin-bottom:10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+
+/* ── Stage / objective builder ── */
+.stage-card{background:rgba(0,0,0,0.3);border:1px solid rgba(76,175,80,0.12);border-radius:4px;padding:10px;margin-bottom:8px}
+.stage-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.stage-title{flex:1;font-size:10px;font-weight:bold}
+.obj-row{display:flex;gap:6px;align-items:center;margin-bottom:5px}
+.obj-row select{flex:0 0 110px}
+.obj-row input{flex:1}
+
+/* ── Reward rows ── */
+.reward-row{display:flex;gap:6px;align-items:center;margin-bottom:5px}
+.reward-row input{flex:1}
+
+/* ── Node canvas ── */
+#canvas-wrap{flex:1;position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 50%, rgba(76,175,80,0.03) 0%, transparent 70%), #040a04}
+#canvas-wrap.dialogue-active{cursor:default}
+#node-canvas{position:absolute;top:0;left:0;width:100%;height:100%}
+#connections-svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}
+#canvas-bg{position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(rgba(76,175,80,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(76,175,80,0.05) 1px, transparent 1px);
+  background-size:40px 40px}
+
+/* ── Dialogue nodes ── */
+.dnode{position:absolute;min-width:180px;max-width:220px;border-radius:5px;border:1px solid rgba(76,175,80,0.25);background:rgba(5,14,5,0.95);cursor:move;user-select:none;transition:border-color 0.1s;z-index:10}
+.dnode:hover{border-color:rgba(76,175,80,0.55)}
+.dnode.selected{border-color:#76ff03;z-index:20}
+.dnode.type-npc{border-color:rgba(100,181,246,0.4)}
+.dnode.type-npc.selected{border-color:#64b5f6}
+.dnode.type-choice{border-color:rgba(255,213,79,0.4)}
+.dnode.type-choice.selected{border-color:#ffd54f}
+.dnode.type-action{border-color:rgba(206,147,216,0.4)}
+.dnode.type-action.selected{border-color:#ce93d8}
+.dnode.type-end{border-color:rgba(239,83,80,0.35)}
+.dnode.type-end.selected{border-color:#ef5350}
+
+.dnode-head{padding:6px 10px;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;border-bottom:1px solid rgba(76,175,80,0.1);display:flex;align-items:center;gap:6px}
+.dnode-head .node-id{opacity:0.3;font-size:8px;margin-left:auto}
+.dnode-body{padding:8px 10px;font-size:10px;line-height:1.45;opacity:0.75;max-height:80px;overflow:hidden;text-overflow:ellipsis}
+.dnode-ports{padding:4px 10px 6px;display:flex;flex-direction:column;gap:3px}
+.port-out{display:flex;align-items:center;gap:4px;font-size:9px;opacity:0.5}
+.port-dot{width:8px;height:8px;border-radius:50%;border:1.5px solid #76ff03;background:rgba(76,175,80,0.2);cursor:crosshair;margin-left:auto;flex-shrink:0}
+.port-dot.choice-port{border-color:#ffd54f;background:rgba(255,213,79,0.15)}
+.port-in{position:absolute;left:-6px;top:50%;transform:translateY(-50%);width:10px;height:10px;border-radius:50%;border:1.5px solid rgba(76,175,80,0.5);background:rgba(5,14,5,0.95)}
+
+/* ── Canvas toolbar ── */
+#canvas-toolbar{position:absolute;top:10px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:50;background:rgba(4,10,4,0.9);border:1px solid rgba(76,175,80,0.2);border-radius:5px;padding:5px 8px}
+.tool-btn{padding:4px 10px;font-size:9px;letter-spacing:0.08em;cursor:pointer;border:1px solid transparent;border-radius:3px;color:rgba(200,230,201,0.6);transition:all 0.1s}
+.tool-btn:hover,.tool-btn.active{color:#76ff03;border-color:rgba(76,175,80,0.3);background:rgba(76,175,80,0.08)}
+
+/* ── Connection SVG ── */
+.conn-path{fill:none;stroke:rgba(76,175,80,0.4);stroke-width:1.5;pointer-events:none}
+.conn-path.type-choice{stroke:rgba(255,213,79,0.4)}
+
+/* ── Empty states ── */
+.empty{text-align:center;opacity:0.25;padding:48px 20px;font-size:11px;line-height:2}
+
+/* ── Toast ── */
+#toast{position:fixed;top:16px;right:16px;background:rgba(5,12,5,0.97);border:1px solid rgba(76,175,80,0.4);border-radius:5px;padding:8px 14px;font-size:11px;z-index:2000;opacity:0;transition:opacity 0.2s;pointer-events:none}
+#toast.show{opacity:1}
+
+/* ── Code modal ── */
+#code-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;align-items:center;justify-content:center}
+#code-modal.open{display:flex}
+#code-wrap{background:rgba(5,12,5,0.99);border:1px solid rgba(76,175,80,0.3);border-radius:7px;width:640px;max-height:75vh;display:flex;flex-direction:column}
+#code-modal-header{padding:11px 16px;display:flex;align-items:center;border-bottom:1px solid rgba(76,175,80,0.14)}
+#code-modal-header span{flex:1;font-size:10px;color:#76ff03;letter-spacing:0.1em}
+#code-pre{flex:1;overflow:auto;padding:14px;font-size:10px;color:#a5d6a7;white-space:pre;line-height:1.5;scrollbar-width:thin}
+#code-modal-footer{padding:8px 14px;display:flex;justify-content:flex-end;gap:8px;border-top:1px solid rgba(76,175,80,0.1)}
+
+/* scrollbars */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(76,175,80,0.22);border-radius:2px}
+</style>
+</head>
+<body>
+
+<div id="header">
+  <h1>Quest Studio</h1>
+  <a href="/" class="header-link">← Asset Studio</a>
+  <div style="flex:1"></div>
+  <div class="mode-btn active" id="mode-quests" onclick="setMode('quests')">Quests</div>
+  <div class="mode-btn" id="mode-dialogues" onclick="setMode('dialogues')">Dialogues</div>
+</div>
+
+<div id="layout">
+  <!-- Sidebar -->
+  <div id="sidebar">
+    <div id="sidebar-header"><span id="sb-label">Quests</span></div>
+    <div id="sidebar-list"></div>
+    <div id="sidebar-footer">
+      <span class="btn primary" style="width:100%;text-align:center;display:block" onclick="createNew()">+ New</span>
+    </div>
+  </div>
+
+  <!-- Center -->
+  <div id="center">
+    <!-- Quest editor (shown in quest mode) -->
+    <div id="quest-editor" style="display:none">
+      <div id="quest-empty" class="empty">Select a quest or create a new one.</div>
+      <div id="quest-form" style="display:none">
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div style="font-size:13px;font-weight:bold;color:#76ff03" id="qf-title-display">Quest Title</div>
+          <div style="display:flex;gap:6px">
+            <span class="btn" onclick="exportQuestJS()">Export JS</span>
+            <span class="btn danger" onclick="deleteQuest()">Delete</span>
+            <span class="btn primary" onclick="saveQuest()">Save</span>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Identity</div>
+          <div class="grid2">
+            <div class="field"><label>Quest ID</label><input id="qf-id" placeholder="findTheRootNexus"/></div>
+            <div class="field"><label>Title</label><input id="qf-title" placeholder="Quest title" oninput="document.getElementById('qf-title-display').textContent=this.value||'Quest Title'"/></div>
+          </div>
+          <div class="field"><label>Description</label><textarea id="qf-desc" rows="2" placeholder="Brief quest summary shown in the journal."></textarea></div>
+          <div class="grid3">
+            <div class="field"><label>Giver NPC ID</label><input id="qf-giver" placeholder="elderRoot"/></div>
+            <div class="field"><label>Faction</label>
+              <select id="qf-faction">
+                <option value="">Any</option>
+                <option value="rootweaver">Rootweaver</option>
+                <option value="solar-compact">Solar Compact</option>
+                <option value="wanderer">Wanderer</option>
+              </select>
+            </div>
+            <div class="field"><label>Level Req</label><input id="qf-level" type="number" value="1" min="1" max="99"/></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Dialogues</div>
+          <div class="grid2">
+            <div class="field"><label>Start Dialogue ID</label>
+              <div style="display:flex;gap:6px">
+                <input id="qf-start-dlg" placeholder="dlg_start"/>
+                <span class="btn sm" onclick="openDialogueById(document.getElementById('qf-start-dlg').value)">Open</span>
+              </div>
+            </div>
+            <div class="field"><label>Complete Dialogue ID</label>
+              <div style="display:flex;gap:6px">
+                <input id="qf-end-dlg" placeholder="dlg_complete"/>
+                <span class="btn sm" onclick="openDialogueById(document.getElementById('qf-end-dlg').value)">Open</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title" style="display:flex;justify-content:space-between">
+            Stages &amp; Objectives
+            <span class="btn sm" onclick="addStage()">+ Stage</span>
+          </div>
+          <div id="stages-container"></div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Rewards</div>
+          <div style="font-size:9px;opacity:0.35;margin-bottom:8px;letter-spacing:0.08em">XP REWARDS</div>
+          <div id="xp-rewards"></div>
+          <span class="btn sm" onclick="addXpReward()" style="margin-bottom:10px">+ Add Skill XP</span>
+
+          <div style="font-size:9px;opacity:0.35;margin:10px 0 8px;letter-spacing:0.08em">ITEM REWARDS</div>
+          <div id="item-rewards"></div>
+          <span class="btn sm" onclick="addItemReward()">+ Add Item</span>
+        </div>
+
+      </div><!-- /quest-form -->
+    </div><!-- /quest-editor -->
+
+    <!-- Dialogue canvas (shown in dialogue mode) -->
+    <div id="canvas-wrap" style="display:none">
+      <div id="canvas-bg"></div>
+      <svg id="connections-svg"></svg>
+      <div id="node-canvas"></div>
+      <div id="canvas-toolbar">
+        <span class="tool-btn" onclick="addNode('npc')">+ NPC</span>
+        <span class="tool-btn" onclick="addNode('choice')">+ Choice</span>
+        <span class="tool-btn" onclick="addNode('action')">+ Action</span>
+        <span class="tool-btn" onclick="addNode('end')">+ End</span>
+        <div style="width:1px;background:rgba(76,175,80,0.2);margin:0 4px"></div>
+        <span class="tool-btn" onclick="autoLayout()">Auto Layout</span>
+        <span class="tool-btn" onclick="exportDialogueJS()">Export JS</span>
+        <span class="tool-btn danger" onclick="deleteDialogue()" style="color:rgba(239,83,80,0.6)">Delete</span>
+      </div>
+      <div id="dlg-empty" class="empty" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">
+        Select a dialogue or create a new one.<br>
+        <span style="font-size:10px">Double-click canvas to add NPC node</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right properties panel -->
+  <div id="props">
+    <div id="props-header">Properties</div>
+    <div id="props-body">
+      <div class="empty" id="props-empty">Select a node to edit</div>
+      <div id="props-form" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Code export modal -->
+<div id="code-modal">
+  <div id="code-wrap">
+    <div id="code-modal-header">
+      <span id="code-modal-title">Export</span>
+    </div>
+    <pre id="code-pre"></pre>
+    <div id="code-modal-footer">
+      <span class="btn" onclick="copyExport()">Copy</span>
+      <span class="btn" onclick="document.getElementById('code-modal').classList.remove('open')">Close</span>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const API = ''
+let mode = 'quests'
+let quests = [], dialogues = []
+let activeQuest = null, activeDialogue = null
+let selectedNodeId = null
+
+// canvas pan state
+let panX = 0, panY = 0, isPanning = false, panStart = null
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+async function init() {
+  await Promise.all([loadQuests(), loadDialogues()])
+  setMode('quests')
+}
+
+async function loadQuests() {
+  const r = await fetch(`${API}/api/quests`)
+  quests = await r.json()
+}
+async function loadDialogues() {
+  const r = await fetch(`${API}/api/dialogues`)
+  dialogues = await r.json()
+}
+
+// ── Mode toggle ───────────────────────────────────────────────────────────────
+function setMode(m) {
+  mode = m
+  document.getElementById('mode-quests').classList.toggle('active', m==='quests')
+  document.getElementById('mode-dialogues').classList.toggle('active', m==='dialogues')
+  document.getElementById('sb-label').textContent = m==='quests' ? 'Quests' : 'Dialogues'
+  document.getElementById('quest-editor').style.display = m==='quests' ? 'block' : 'none'
+  document.getElementById('canvas-wrap').style.display  = m==='dialogues' ? 'flex' : 'none'
+  renderSidebar()
+}
+
+// ── Sidebar ───────────────────────────────────────────────────────────────────
+function renderSidebar() {
+  const list = document.getElementById('sidebar-list')
+  list.innerHTML = ''
+  const items = mode==='quests' ? quests : dialogues
+  if (!items.length) {
+    list.innerHTML = '<div class="empty" style="padding:20px 14px;font-size:10px">None yet</div>'
+    return
+  }
+  items.forEach(item => {
+    const el = document.createElement('div')
+    el.className = 'sb-item' + ((mode==='quests' ? activeQuest?.id : activeDialogue?.id) === item.id ? ' active' : '')
+    el.innerHTML = `<div>${esc(item.title || item.npc_name || item.id)}</div>
+      <div class="sb-item-sub">${esc(item.id)}</div>`
+    el.onclick = () => mode==='quests' ? openQuest(item) : openDialogue(item)
+    list.appendChild(el)
+  })
+}
+
+// ── Create ────────────────────────────────────────────────────────────────────
+async function createNew() {
+  if (mode==='quests') {
+    const r = await fetch(`${API}/api/quests`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ title:'New Quest', description:'' })
+    })
+    const q = await r.json()
+    await loadQuests()
+    renderSidebar()
+    openQuest(q)
+  } else {
+    const npcName = prompt('NPC name for this dialogue?', 'Elder Root')
+    if (!npcName) return
+    const r = await fetch(`${API}/api/dialogues`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ npc_name: npcName })
+    })
+    const d = await r.json()
+    await loadDialogues()
+    renderSidebar()
+    openDialogue(d)
+  }
+}
+
+// ── Quest editor ──────────────────────────────────────────────────────────────
+function openQuest(q) {
+  activeQuest = JSON.parse(JSON.stringify(q))
+  document.getElementById('quest-empty').style.display = 'none'
+  document.getElementById('quest-form').style.display  = 'block'
+  document.getElementById('qf-id').value       = q.id
+  document.getElementById('qf-title').value    = q.title || ''
+  document.getElementById('qf-desc').value     = q.description || ''
+  document.getElementById('qf-giver').value    = q.giver_npc || ''
+  document.getElementById('qf-faction').value  = q.faction || ''
+  document.getElementById('qf-level').value    = q.level_req ?? 1
+  document.getElementById('qf-start-dlg').value = q.start_dialogue_id || ''
+  document.getElementById('qf-end-dlg').value   = q.complete_dialogue_id || ''
+  document.getElementById('qf-title-display').textContent = q.title || 'Quest Title'
+  renderStages(q.stages || [])
+  renderRewards(q.rewards || {})
+  renderSidebar()
+}
+
+function collectQuest() {
+  return {
+    id:                  document.getElementById('qf-id').value.trim(),
+    title:               document.getElementById('qf-title').value.trim(),
+    description:         document.getElementById('qf-desc').value.trim(),
+    giver_npc:           document.getElementById('qf-giver').value.trim(),
+    faction:             document.getElementById('qf-faction').value || null,
+    level_req:           +document.getElementById('qf-level').value,
+    prerequisites:       activeQuest?.prerequisites || [],
+    start_dialogue_id:   document.getElementById('qf-start-dlg').value.trim(),
+    complete_dialogue_id:document.getElementById('qf-end-dlg').value.trim(),
+    stages:              collectStages(),
+    rewards:             collectRewards(),
+  }
+}
+
+async function saveQuest() {
+  const q = collectQuest()
+  if (!q.id) { toast('Quest needs an ID', true); return }
+  await fetch(`${API}/api/quests/${q.id}`, {
+    method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(q)
+  })
+  activeQuest = q
+  await loadQuests()
+  renderSidebar()
+  toast('Quest saved')
+}
+
+async function deleteQuest() {
+  if (!activeQuest || !confirm(`Delete "${activeQuest.title}"?`)) return
+  await fetch(`${API}/api/quests/${activeQuest.id}`, { method:'DELETE' })
+  activeQuest = null
+  document.getElementById('quest-empty').style.display = 'block'
+  document.getElementById('quest-form').style.display  = 'none'
+  await loadQuests()
+  renderSidebar()
+  toast('Quest deleted')
+}
+
+async function exportQuestJS() {
+  if (!activeQuest) return
+  await saveQuest()
+  const r = await fetch(`${API}/api/quests/${activeQuest.id}/export`)
+  const d = await r.json()
+  showCode('Quest Export — ' + activeQuest.title, d.code)
+}
+
+// ── Stages ────────────────────────────────────────────────────────────────────
+const OBJ_TYPES = ['kill','gather','talk','reach','build','craft','interact']
+
+function renderStages(stages) {
+  const c = document.getElementById('stages-container')
+  c.innerHTML = ''
+  stages.forEach((st, si) => {
+    const card = document.createElement('div')
+    card.className = 'stage-card'
+    card.dataset.si = si
+    card.innerHTML = `
+      <div class="stage-header">
+        <span class="stage-title">Stage ${si+1}</span>
+        <input style="flex:1" value="${esc(st.description||'')}" placeholder="Stage description" oninput="stageField(${si},'description',this.value)"/>
+        <span class="btn sm danger" onclick="removeStage(${si})">✕</span>
+      </div>
+      <div class="objs-wrap" id="objs-${si}"></div>
+      <span class="btn sm" onclick="addObjective(${si})" style="margin-top:4px">+ Objective</span>
+    `
+    c.appendChild(card)
+    renderObjectives(si, st.objectives || [])
+  })
+}
+
+function renderObjectives(si, objectives) {
+  const wrap = document.getElementById(`objs-${si}`)
+  wrap.innerHTML = ''
+  objectives.forEach((obj, oi) => {
+    const row = document.createElement('div')
+    row.className = 'obj-row'
+    row.innerHTML = `
+      <select onchange="objField(${si},${oi},'type',this.value)">
+        ${OBJ_TYPES.map(t=>`<option value="${t}" ${obj.type===t?'selected':''}>${t}</option>`).join('')}
+      </select>
+      <input placeholder="target ID / itemId / npcId" value="${esc(obj.target||obj.itemId||obj.npcId||obj.zoneId||'')}" oninput="objField(${si},${oi},'target',this.value)"/>
+      <input type="number" placeholder="qty" value="${obj.qty||1}" style="width:52px" oninput="objField(${si},${oi},'qty',+this.value)"/>
+      <span class="btn sm danger" onclick="removeObjective(${si},${oi})">✕</span>
+    `
+    wrap.appendChild(row)
+  })
+}
+
+function stagesData() {
+  const stages = []
+  document.querySelectorAll('.stage-card').forEach(card => {
+    stages.push(card._data || { description:'', objectives:[] })
+  })
+  return stages
+}
+
+// We'll store live edits directly on activeQuest
+function stageField(si, key, val) {
+  if (!activeQuest.stages[si]) return
+  activeQuest.stages[si][key] = val
+}
+function objField(si, oi, key, val) {
+  if (!activeQuest.stages[si]?.objectives[oi]) return
+  activeQuest.stages[si].objectives[oi][key] = val
+}
+function addStage() {
+  activeQuest = activeQuest || {}
+  activeQuest.stages = activeQuest.stages || []
+  activeQuest.stages.push({ description:'', objectives:[] })
+  renderStages(activeQuest.stages)
+}
+function removeStage(si) {
+  activeQuest.stages.splice(si, 1)
+  renderStages(activeQuest.stages)
+}
+function addObjective(si) {
+  activeQuest.stages[si].objectives.push({ type:'gather', target:'', qty:1 })
+  renderObjectives(si, activeQuest.stages[si].objectives)
+}
+function removeObjective(si, oi) {
+  activeQuest.stages[si].objectives.splice(oi, 1)
+  renderObjectives(si, activeQuest.stages[si].objectives)
+}
+function collectStages() {
+  // Read current DOM state
+  const out = []
+  document.querySelectorAll('.stage-card').forEach((card, si) => {
+    const desc = card.querySelector('input').value
+    const objs = []
+    card.querySelectorAll('.obj-row').forEach(row => {
+      const inputs = row.querySelectorAll('input, select')
+      objs.push({ type: inputs[0].value, target: inputs[1].value, qty: +inputs[2].value })
+    })
+    out.push({ id:`stage${si+1}`, description: desc, objectives: objs })
+  })
+  return out
+}
+
+// ── Rewards ───────────────────────────────────────────────────────────────────
+const SKILL_IDS = ['biomech','tenacity','vitality','mycelial','marksmanship','solarcasting','woodcutting','mining','foundry','chemistry','construction','technology','ecology']
+
+function renderRewards(rewards) {
+  const xpWrap = document.getElementById('xp-rewards')
+  xpWrap.innerHTML = ''
+  Object.entries(rewards.xp || {}).forEach(([skill, amt]) => {
+    xpWrap.appendChild(makeXpRow(skill, amt))
+  })
+  const itemWrap = document.getElementById('item-rewards')
+  itemWrap.innerHTML = ''
+  ;(rewards.items || []).forEach(it => itemWrap.appendChild(makeItemRow(it.itemId, it.qty)))
+}
+
+function makeXpRow(skill='biomech', amt=100) {
+  const row = document.createElement('div')
+  row.className = 'reward-row'
+  row.innerHTML = `
+    <select style="flex:0 0 130px">${SKILL_IDS.map(s=>`<option value="${s}" ${s===skill?'selected':''}>${s}</option>`).join('')}</select>
+    <input type="number" value="${amt}" placeholder="XP amount" min="0"/>
+    <span class="btn sm danger" onclick="this.parentElement.remove()">✕</span>
+  `
+  return row
+}
+function makeItemRow(itemId='', qty=1) {
+  const row = document.createElement('div')
+  row.className = 'reward-row'
+  row.innerHTML = `
+    <input value="${esc(itemId)}" placeholder="itemId"/>
+    <input type="number" value="${qty}" placeholder="qty" style="width:60px" min="1"/>
+    <span class="btn sm danger" onclick="this.parentElement.remove()">✕</span>
+  `
+  return row
+}
+function addXpReward()  { document.getElementById('xp-rewards').appendChild(makeXpRow()) }
+function addItemReward(){ document.getElementById('item-rewards').appendChild(makeItemRow()) }
+function collectRewards() {
+  const xp = {}
+  document.querySelectorAll('#xp-rewards .reward-row').forEach(row => {
+    const [sel, inp] = row.querySelectorAll('select, input')
+    if (sel.value) xp[sel.value] = +inp.value
+  })
+  const items = []
+  document.querySelectorAll('#item-rewards .reward-row').forEach(row => {
+    const [id, qty] = row.querySelectorAll('input')
+    if (id.value.trim()) items.push({ itemId: id.value.trim(), qty: +qty.value })
+  })
+  return { xp, items, faction_rep:{} }
+}
+
+// ── Dialogue editor ───────────────────────────────────────────────────────────
+function openDialogue(d) {
+  activeDialogue = JSON.parse(JSON.stringify(d))
+  selectedNodeId = null
+  document.getElementById('dlg-empty').style.display = d ? 'none' : 'block'
+  clearProps()
+  renderCanvas()
+  renderSidebar()
+}
+
+function openDialogueById(id) {
+  if (!id) return
+  const d = dialogues.find(x=>x.id===id)
+  if (!d) { toast('Dialogue not found: ' + id, true); return }
+  setMode('dialogues')
+  openDialogue(d)
+}
+
+async function deleteDialogue() {
+  if (!activeDialogue || !confirm(`Delete dialogue "${activeDialogue.id}"?`)) return
+  await fetch(`${API}/api/dialogues/${activeDialogue.id}`, { method:'DELETE' })
+  activeDialogue = null
+  await loadDialogues()
+  renderSidebar()
+  clearCanvas()
+  toast('Dialogue deleted')
+}
+
+async function saveDialogue() {
+  if (!activeDialogue) return
+  await fetch(`${API}/api/dialogues/${activeDialogue.id}`, {
+    method:'PUT', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(activeDialogue)
+  })
+  await loadDialogues()
+  renderSidebar()
+  toast('Dialogue saved')
+}
+
+async function exportDialogueJS() {
+  if (!activeDialogue) return
+  await saveDialogue()
+  const r = await fetch(`${API}/api/dialogues/${activeDialogue.id}/export`)
+  const d = await r.json()
+  showCode('Dialogue Export — ' + activeDialogue.id, d.code)
+}
+
+// ── Canvas rendering ──────────────────────────────────────────────────────────
+const NODE_W = 200
+const NODE_H_BASE = 72
+
+function clearCanvas() {
+  document.getElementById('node-canvas').innerHTML = ''
+  document.getElementById('connections-svg').innerHTML = ''
+  document.getElementById('dlg-empty').style.display = 'block'
+}
+
+function renderCanvas() {
+  if (!activeDialogue) { clearCanvas(); return }
+  document.getElementById('dlg-empty').style.display = 'none'
+  const canvas = document.getElementById('node-canvas')
+  canvas.innerHTML = ''
+  const svg = document.getElementById('connections-svg')
+  svg.innerHTML = ''
+
+  const nodes = activeDialogue.nodes || {}
+  for (const [id, node] of Object.entries(nodes)) {
+    canvas.appendChild(makeNodeEl(id, node))
+  }
+  drawConnections()
+}
+
+const TYPE_LABEL = { npc:'NPC', choice:'Choice', action:'Action', end:'End' }
+const TYPE_COLOR = { npc:'#64b5f6', choice:'#ffd54f', action:'#ce93d8', end:'#ef5350' }
+
+function makeNodeEl(id, node) {
+  const el = document.createElement('div')
+  el.className = `dnode type-${node.type}` + (id===selectedNodeId?' selected':'')
+  el.id = 'node-' + id
+  el.style.left = (node.x ?? 60) + 'px'
+  el.style.top  = (node.y ?? 60) + 'px'
+
+  const color = TYPE_COLOR[node.type] || '#76ff03'
+  let body = ''
+  if (node.type === 'npc') {
+    body = `<div class="dnode-body"><strong style="color:${color};font-size:9px">${esc(node.speaker||'NPC')}</strong><br>${esc(node.text||'').slice(0,80)}${(node.text||'').length>80?'…':''}</div>`
+  } else if (node.type === 'choice') {
+    const opts = (node.options||[]).map((o,i)=>`<div class="port-out"><span style="opacity:0.7">${esc(o.text||'…').slice(0,22)}</span><div class="port-dot choice-port" data-opt="${i}" data-nodeid="${id}"></div></div>`).join('')
+    body = `<div class="dnode-ports">${opts}</div>`
+  } else if (node.type === 'action') {
+    const acts = (node.actions||[]).map(a=>a.type||'').join(', ')
+    body = `<div class="dnode-body" style="color:#ce93d8">${esc(acts)||'No actions'}</div>`
+  } else if (node.type === 'end') {
+    body = `<div class="dnode-body" style="color:#ef5350;text-align:center;padding:10px">⬛ Dialogue ends</div>`
+  }
+
+  el.innerHTML = `
+    <div class="port-in" id="port-in-${id}"></div>
+    <div class="dnode-head">
+      <span style="color:${color};font-size:9px">${TYPE_LABEL[node.type]||node.type}</span>
+      <span class="node-id">${id}</span>
+    </div>
+    ${body}
+    ${node.type!=='choice'&&node.type!=='end' ? `<div class="dnode-ports"><div class="port-out"><span style="opacity:0.45;font-size:9px">next →</span><div class="port-dot" data-nodeid="${id}" data-opt="-1"></div></div></div>` : ''}
+  `
+
+  // Drag to reposition
+  let dragging=false, ox=0, oy=0
+  el.addEventListener('mousedown', e => {
+    if (e.target.classList.contains('port-dot')) return
+    dragging=true; ox=e.clientX-node.x; oy=e.clientY-node.y
+    selectNode(id)
+    e.stopPropagation()
+    const up   = () => { dragging=false; window.removeEventListener('mouseup',up); window.removeEventListener('mousemove',mv) }
+    const mv   = ev => {
+      if(!dragging)return
+      node.x = ev.clientX-ox; node.y = ev.clientY-oy
+      el.style.left = node.x+'px'; el.style.top = node.y+'px'
+      drawConnections()
+    }
+    window.addEventListener('mousemove', mv)
+    window.addEventListener('mouseup', up)
+  })
+
+  return el
+}
+
+function drawConnections() {
+  const svg = document.getElementById('connections-svg')
+  svg.innerHTML = ''
+  const nodes = activeDialogue?.nodes || {}
+  const canvas = document.getElementById('node-canvas')
+  const rect = canvas.getBoundingClientRect()
+
+  for (const [id, node] of Object.entries(nodes)) {
+    if (node.type === 'choice') {
+      ;(node.options||[]).forEach((opt,i) => {
+        if (opt.next) drawCurve(svg, id, opt.next, i, true)
+      })
+    } else if (node.next) {
+      drawCurve(svg, id, node.next, -1, false)
+    }
+  }
+}
+
+function nodePortPos(nodeId, optIdx, isOut) {
+  const node = activeDialogue.nodes[nodeId]
+  if (!node) return null
+  const nx = node.x ?? 60, ny = node.y ?? 60
+
+  if (isOut) {
+    if (optIdx >= 0) {
+      // choice option port: approximate vertical position
+      const optH = 22
+      return { x: nx + NODE_W, y: ny + 52 + optIdx * optH + 8 }
+    }
+    return { x: nx + NODE_W, y: ny + 50 }
+  }
+  return { x: nx, y: ny + 50 }
+}
+
+function drawCurve(svg, fromId, toId, optIdx, isChoice) {
+  const from = nodePortPos(fromId, optIdx, true)
+  const to   = nodePortPos(toId, -1, false)
+  if (!from || !to) return
+
+  const cx1 = from.x + 60, cy1 = from.y
+  const cx2 = to.x   - 60, cy2 = to.y
+
+  const path = document.createElementNS('http://www.w3.org/2000/svg','path')
+  path.setAttribute('d', `M${from.x},${from.y} C${cx1},${cy1} ${cx2},${cy2} ${to.x},${to.y}`)
+  path.setAttribute('class', `conn-path ${isChoice?'type-choice':''}`)
+  svg.appendChild(path)
+
+  // Arrow head
+  const angle = Math.atan2(to.y-cy2, to.x-cx2)
+  const ah = 7
+  const ax1 = to.x - ah*Math.cos(angle-0.4), ay1 = to.y - ah*Math.sin(angle-0.4)
+  const ax2 = to.x - ah*Math.cos(angle+0.4), ay2 = to.y - ah*Math.sin(angle+0.4)
+  const arrow = document.createElementNS('http://www.w3.org/2000/svg','path')
+  arrow.setAttribute('d', `M${to.x},${to.y} L${ax1},${ay1} M${to.x},${to.y} L${ax2},${ay2}`)
+  arrow.setAttribute('class', `conn-path ${isChoice?'type-choice':''}`)
+  svg.appendChild(arrow)
+}
+
+// Double-click canvas to add node
+document.getElementById('canvas-wrap').addEventListener('dblclick', e => {
+  if (!activeDialogue) return
+  if (e.target.id === 'canvas-wrap' || e.target.id === 'canvas-bg') {
+    const rect = document.getElementById('node-canvas').getBoundingClientRect()
+    addNodeAt('npc', e.clientX - rect.left - 90, e.clientY - rect.top - 30)
+  }
+})
+
+// ── Node operations ───────────────────────────────────────────────────────────
+function uid() { return 'node_' + Math.random().toString(36).slice(2,7) }
+
+function addNode(type) {
+  const cx = 200 + Math.random()*200
+  const cy = 100 + Math.random()*200
+  addNodeAt(type, cx, cy)
+}
+
+function addNodeAt(type, x, y) {
+  if (!activeDialogue) return
+  const id = uid()
+  const node = { type, x, y }
+  if (type==='npc')    { node.speaker=activeDialogue.npc_name||'NPC'; node.text=''; node.next='' }
+  if (type==='choice') { node.options=[{text:'Option 1', next:''},{text:'Option 2', next:''}] }
+  if (type==='action') { node.actions=[{type:'start_quest', questId:''}]; node.next='' }
+  if (type==='end')    { /* no extra fields */ }
+  activeDialogue.nodes[id] = node
+  document.getElementById('node-canvas').appendChild(makeNodeEl(id, node))
+  selectNode(id)
+  drawConnections()
+}
+
+function deleteNode(id) {
+  if (!activeDialogue) return
+  delete activeDialogue.nodes[id]
+  // Remove references to this node
+  for (const n of Object.values(activeDialogue.nodes)) {
+    if (n.next === id) n.next = ''
+    if (n.options) n.options.forEach(o => { if (o.next===id) o.next='' })
+  }
+  renderCanvas()
+  clearProps()
+}
+
+function selectNode(id) {
+  selectedNodeId = id
+  document.querySelectorAll('.dnode').forEach(el => {
+    el.classList.toggle('selected', el.id === 'node-'+id)
+  })
+  renderProps(id)
+}
+
+// ── Properties panel ──────────────────────────────────────────────────────────
+function clearProps() {
+  document.getElementById('props-empty').style.display = 'block'
+  document.getElementById('props-form').style.display = 'none'
+}
+
+function renderProps(id) {
+  const node = activeDialogue?.nodes?.[id]
+  if (!node) { clearProps(); return }
+  document.getElementById('props-empty').style.display = 'none'
+  const form = document.getElementById('props-form')
+  form.style.display = 'block'
+
+  const allNodeIds = Object.keys(activeDialogue.nodes)
+  const nodeOpts = ['', ...allNodeIds].map(n=>`<option value="${n}" ${n===(node.next||'')?'selected':''}>${n||'— none —'}</option>`).join('')
+
+  let html = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <span style="font-size:9px;color:${TYPE_COLOR[node.type]||'#76ff03'};letter-spacing:0.1em;text-transform:uppercase">${TYPE_LABEL[node.type]||node.type} — ${id}</span>
+      <span class="btn sm danger" onclick="deleteNode('${id}')">Delete</span>
+    </div>
+  `
+
+  if (node.type === 'npc') {
+    html += `
+      <div class="field"><label>Speaker</label><input value="${esc(node.speaker||'')}" oninput="patchNode('${id}','speaker',this.value)"/></div>
+      <div class="field"><label>Dialogue Text</label><textarea rows="4" oninput="patchNode('${id}','text',this.value)">${esc(node.text||'')}</textarea></div>
+      <div class="field"><label>Next Node</label>
+        <select onchange="patchNode('${id}','next',this.value)">${nodeOpts}</select>
+      </div>
+    `
+  } else if (node.type === 'choice') {
+    html += `<div class="field"><label>Options</label></div>`
+    ;(node.options||[]).forEach((opt, i) => {
+      const optOpts = ['', ...allNodeIds].map(n=>`<option value="${n}" ${n===(opt.next||'')?'selected':''}>${n||'— none —'}</option>`).join('')
+      html += `
+        <div style="background:rgba(0,0,0,0.3);border-radius:4px;padding:8px;margin-bottom:6px">
+          <div class="field"><label>Option ${i+1} Text</label><input value="${esc(opt.text||'')}" oninput="patchOption('${id}',${i},'text',this.value)"/></div>
+          <div class="field"><label>Goes to</label><select onchange="patchOption('${id}',${i},'next',this.value)">${optOpts}</select></div>
+          <span class="btn sm danger" onclick="removeOption('${id}',${i})">Remove option</span>
+        </div>
+      `
+    })
+    html += `<span class="btn sm" onclick="addOption('${id}')">+ Add option</span>`
+  } else if (node.type === 'action') {
+    html += `<div class="field"><label>Actions</label></div>`
+    ;(node.actions||[]).forEach((act, i) => {
+      html += `
+        <div style="background:rgba(0,0,0,0.3);border-radius:4px;padding:8px;margin-bottom:6px">
+          <div class="field"><label>Action Type</label>
+            <select onchange="patchAction('${id}',${i},'type',this.value)">
+              ${['start_quest','complete_quest','give_item','remove_item','emit_event','set_flag'].map(t=>`<option value="${t}" ${t===act.type?'selected':''}>${t}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field"><label>Value (questId / itemId / eventName)</label><input value="${esc(act.value||act.questId||act.itemId||act.event||'')}" oninput="patchAction('${id}',${i},'value',this.value)"/></div>
+          <span class="btn sm danger" onclick="removeAction('${id}',${i})">Remove</span>
+        </div>
+      `
+    })
+    html += `
+      <span class="btn sm" onclick="addAction('${id}')" style="margin-bottom:10px">+ Add action</span>
+      <div class="field" style="margin-top:8px"><label>Next Node</label>
+        <select onchange="patchNode('${id}','next',this.value)">${nodeOpts}</select>
+      </div>
+    `
+  }
+
+  html += `
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(76,175,80,0.1)">
+      <span class="btn primary" style="width:100%;text-align:center;display:block" onclick="saveDialogue()">Save Dialogue</span>
+    </div>
+  `
+  form.innerHTML = html
+}
+
+function patchNode(id, key, val) {
+  if (!activeDialogue?.nodes?.[id]) return
+  activeDialogue.nodes[id][key] = val
+  refreshNodeEl(id)
+  drawConnections()
+}
+function patchOption(id, i, key, val) {
+  if (!activeDialogue?.nodes?.[id]?.options?.[i]) return
+  activeDialogue.nodes[id].options[i][key] = val
+  refreshNodeEl(id)
+  drawConnections()
+}
+function patchAction(id, i, key, val) {
+  if (!activeDialogue?.nodes?.[id]?.actions?.[i]) return
+  activeDialogue.nodes[id].actions[i][key] = val
+  refreshNodeEl(id)
+}
+function addOption(id) {
+  activeDialogue.nodes[id].options = activeDialogue.nodes[id].options || []
+  activeDialogue.nodes[id].options.push({ text:'New option', next:'' })
+  renderCanvas(); selectNode(id)
+}
+function removeOption(id, i) {
+  activeDialogue.nodes[id].options.splice(i,1)
+  renderCanvas(); selectNode(id)
+}
+function addAction(id) {
+  activeDialogue.nodes[id].actions = activeDialogue.nodes[id].actions || []
+  activeDialogue.nodes[id].actions.push({ type:'emit_event', value:'' })
+  renderProps(id)
+}
+function removeAction(id, i) {
+  activeDialogue.nodes[id].actions.splice(i,1)
+  renderProps(id)
+}
+function refreshNodeEl(id) {
+  const old = document.getElementById('node-'+id)
+  const node = activeDialogue.nodes[id]
+  if (!old || !node) return
+  const neo = makeNodeEl(id, node)
+  old.replaceWith(neo)
+}
+
+// ── Auto layout ───────────────────────────────────────────────────────────────
+function autoLayout() {
+  if (!activeDialogue) return
+  const nodes = activeDialogue.nodes
+  const startId = activeDialogue.start || Object.keys(nodes)[0]
+  const visited = new Set(), cols = {}
+  let maxCol = 0
+
+  function walk(id, col, row) {
+    if (!nodes[id] || visited.has(id)) return row
+    visited.add(id)
+    cols[col] = cols[col] || []
+    cols[col].push(id)
+    maxCol = Math.max(maxCol, col)
+    const n = nodes[id]
+    if (n.type === 'choice') {
+      let r = row
+      ;(n.options||[]).forEach(o => { if (o.next) r = walk(o.next, col+1, r) })
+      return r
+    } else if (n.next) {
+      return walk(n.next, col+1, row+1)
+    }
+    return row+1
+  }
+  walk(startId, 0, 0)
+
+  for (const [col, ids] of Object.entries(cols)) {
+    ids.forEach((id, row) => {
+      nodes[id].x = +col * 280 + 40
+      nodes[id].y = row * 160 + 60
+    })
+  }
+  renderCanvas()
+  toast('Layout applied')
+}
+
+// ── Code modal ────────────────────────────────────────────────────────────────
+function showCode(title, code) {
+  document.getElementById('code-modal-title').textContent = title
+  document.getElementById('code-pre').textContent = code
+  document.getElementById('code-modal').classList.add('open')
+}
+function copyExport() {
+  navigator.clipboard.writeText(document.getElementById('code-pre').textContent).then(()=>toast('Copied!'))
+}
+document.getElementById('code-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('code-modal')) document.getElementById('code-modal').classList.remove('open')
+})
+
+// ── Utils ─────────────────────────────────────────────────────────────────────
+function esc(s) { return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
+let _tt
+function toast(msg, err=false) {
+  const el = document.getElementById('toast')
+  el.textContent = msg
+  el.style.borderColor = err ? 'rgba(239,83,80,0.5)' : 'rgba(76,175,80,0.4)'
+  el.style.color = err ? '#ef9a9a' : '#c8e6c9'
+  el.classList.add('show')
+  clearTimeout(_tt)
+  _tt = setTimeout(()=>el.classList.remove('show'), 2200)
+}
+
+init()
+</script>
+</body>
+</html>

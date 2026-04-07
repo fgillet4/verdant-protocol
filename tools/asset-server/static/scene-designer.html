@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Scene Designer — Verdant Protocol</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#060d06;color:#c8e6c9;font-family:'Courier New',monospace;font-size:12px;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+#header{background:rgba(5,12,5,0.97);border-bottom:1px solid rgba(76,175,80,0.2);padding:9px 18px;display:flex;align-items:center;gap:12px;flex-shrink:0;z-index:100}
+#header h1{color:#76ff03;font-size:13px;font-weight:300;letter-spacing:0.28em;text-transform:uppercase}
+.hbtn{font-size:9px;letter-spacing:0.08em;padding:4px 12px;border:1px solid rgba(76,175,80,0.25);border-radius:3px;cursor:pointer;opacity:0.55;transition:all 0.1s;background:transparent;color:#c8e6c9}
+.hbtn:hover,.hbtn.active{opacity:1;border-color:#76ff03;color:#76ff03}
+.hbtn.danger{border-color:rgba(239,83,80,0.3)}
+.hbtn.danger:hover{border-color:#ef5350;color:#ef5350;opacity:1}
+#layout{display:flex;flex:1;overflow:hidden}
+
+/* ── Left panel: asset browser ── */
+#left{width:200px;background:rgba(4,10,4,0.94);border-right:1px solid rgba(76,175,80,0.13);display:flex;flex-direction:column;flex-shrink:0}
+#left-header{padding:8px 10px 5px;font-size:9px;opacity:0.35;letter-spacing:0.15em;text-transform:uppercase;border-bottom:1px solid rgba(76,175,80,0.1)}
+#asset-browser{flex:1;overflow-y:auto;padding:4px;scrollbar-width:thin;scrollbar-color:rgba(76,175,80,0.2) transparent}
+.asset-item{padding:6px 8px;cursor:pointer;border-radius:3px;font-size:10px;display:flex;align-items:center;gap:6px;border:1px solid transparent;transition:all 0.1s;margin-bottom:2px}
+.asset-item:hover{background:rgba(76,175,80,0.08);border-color:rgba(76,175,80,0.2)}
+.asset-item .ai-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.asset-item .ai-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.asset-item .ai-type{font-size:8px;opacity:0.4;text-transform:uppercase;letter-spacing:0.07em;flex-shrink:0}
+#left-footer{padding:8px;border-top:1px solid rgba(76,175,80,0.1)}
+
+/* ── Center: Three.js viewport ── */
+#viewport{flex:1;position:relative;overflow:hidden}
+#viewport canvas{display:block}
+#viewport-overlay{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);font-size:9px;opacity:0.3;letter-spacing:0.08em;pointer-events:none}
+
+/* ── Right panel: properties ── */
+#right{width:230px;background:rgba(4,10,4,0.94);border-left:1px solid rgba(76,175,80,0.13);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
+#right-header{padding:8px 10px 5px;font-size:9px;opacity:0.35;letter-spacing:0.15em;text-transform:uppercase;border-bottom:1px solid rgba(76,175,80,0.1)}
+#props-body{flex:1;overflow-y:auto;padding:10px;scrollbar-width:thin;scrollbar-color:rgba(76,175,80,0.2) transparent}
+
+/* ── Scene hierarchy ── */
+#scene-list{margin-top:10px}
+.scene-item{padding:5px 8px;font-size:10px;cursor:pointer;border-radius:3px;display:flex;align-items:center;gap:5px;border:1px solid transparent;transition:all 0.08s}
+.scene-item:hover{background:rgba(76,175,80,0.06)}
+.scene-item.selected{background:rgba(76,175,80,0.1);border-color:rgba(76,175,80,0.3);color:#76ff03}
+.scene-item .si-vis{font-size:10px;cursor:pointer;opacity:0.4;flex-shrink:0;margin-left:auto}
+.scene-item .si-vis:hover{opacity:1}
+
+/* ── Form elements ── */
+.field{margin-bottom:8px}
+label{display:block;font-size:9px;opacity:0.38;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:3px}
+input[type=number],input[type=text]{width:100%;background:rgba(0,0,0,0.4);border:1px solid rgba(76,175,80,0.2);border-radius:3px;color:#c8e6c9;font-family:inherit;font-size:11px;padding:4px 6px;outline:none}
+input:focus{border-color:rgba(76,175,80,0.5)}
+.xyz-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px}
+.xyz-row input{text-align:center}
+
+.btn{display:inline-block;padding:4px 10px;border:1px solid rgba(76,175,80,0.35);border-radius:3px;cursor:pointer;font-family:inherit;font-size:10px;background:rgba(76,175,80,0.06);color:#c8e6c9;transition:all 0.1s}
+.btn:hover{background:rgba(76,175,80,0.16);border-color:#76ff03;color:#76ff03}
+.btn.danger{border-color:rgba(239,83,80,0.3);color:#ef9a9a}
+.btn.danger:hover{background:rgba(239,83,80,0.12);border-color:#ef5350;color:#ef5350}
+.btn.sm{padding:2px 7px;font-size:9px}
+
+/* ── Toolbar strip ── */
+#toolbar{position:absolute;top:10px;left:10px;display:flex;flex-direction:column;gap:4px;z-index:50}
+.tool{width:32px;height:32px;background:rgba(4,10,4,0.9);border:1px solid rgba(76,175,80,0.2);border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;transition:all 0.1s;opacity:0.55}
+.tool:hover,.tool.active{opacity:1;border-color:#76ff03}
+
+/* ── Grid / axes ── */
+
+/* ── Toast ── */
+#toast{position:fixed;top:16px;right:16px;background:rgba(5,12,5,0.97);border:1px solid rgba(76,175,80,0.4);border-radius:5px;padding:8px 14px;font-size:11px;z-index:2000;opacity:0;transition:opacity 0.2s;pointer-events:none}
+#toast.show{opacity:1}
+
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(76,175,80,0.22);border-radius:2px}
+</style>
+</head>
+<body>
+
+<div id="header">
+  <h1>Scene Designer</h1>
+  <a href="/" style="font-size:9px;opacity:0.45;padding:3px 9px;border:1px solid rgba(76,175,80,0.18);border-radius:3px;color:#c8e6c9;text-decoration:none">← Assets</a>
+  <div style="width:1px;height:16px;background:rgba(76,175,80,0.15);margin:0 4px"></div>
+  <button class="hbtn active" id="tool-translate" onclick="setTool('translate')" title="Move (W)">Move</button>
+  <button class="hbtn" id="tool-rotate"    onclick="setTool('rotate')"    title="Rotate (E)">Rotate</button>
+  <button class="hbtn" id="tool-scale"     onclick="setTool('scale')"     title="Scale (R)">Scale</button>
+  <div style="flex:1"></div>
+  <button class="hbtn" onclick="addPrimitive('box')">+ Box</button>
+  <button class="hbtn" onclick="addPrimitive('sphere')">+ Sphere</button>
+  <button class="hbtn" onclick="addPrimitive('plane')">+ Plane</button>
+  <div style="width:1px;height:16px;background:rgba(76,175,80,0.15);margin:0 4px"></div>
+  <button class="hbtn" onclick="exportScene()">Export JSON</button>
+  <button class="hbtn" onclick="saveScene()">Save Scene</button>
+  <button class="hbtn danger" onclick="clearScene()">Clear</button>
+</div>
+
+<div id="layout">
+  <!-- Asset browser -->
+  <div id="left">
+    <div id="left-header">Assets</div>
+    <div id="asset-browser"></div>
+    <div id="left-footer">
+      <input type="text" id="asset-search" placeholder="Search assets…" style="width:100%;background:rgba(0,0,0,0.4);border:1px solid rgba(76,175,80,0.2);border-radius:3px;color:#c8e6c9;font-family:inherit;font-size:10px;padding:4px 7px;outline:none"/>
+    </div>
+  </div>
+
+  <!-- Viewport -->
+  <div id="viewport">
+    <div id="toolbar">
+      <div class="tool active" id="t-translate" title="Move (W)" onclick="setTool('translate')">↔</div>
+      <div class="tool" id="t-rotate"    title="Rotate (E)" onclick="setTool('rotate')">↻</div>
+      <div class="tool" id="t-scale"     title="Scale (R)" onclick="setTool('scale')">⤢</div>
+    </div>
+    <div id="viewport-overlay">W/E/R — translate/rotate/scale · Del — delete · F — focus · Middle drag — pan · Scroll — zoom</div>
+  </div>
+
+  <!-- Right panel -->
+  <div id="right">
+    <div id="right-header">Scene</div>
+    <div id="props-body">
+      <div id="scene-list"></div>
+      <div id="no-objects" style="text-align:center;opacity:0.25;padding:20px 10px;font-size:10px;line-height:1.8">
+        Drop an asset from the left<br>or add a primitive above
+      </div>
+      <div id="sel-props" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid rgba(76,175,80,0.1)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div id="sel-name" style="font-size:10px;color:#76ff03;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px"></div>
+          <span class="btn sm danger" onclick="deleteSelected()">Del</span>
+        </div>
+        <div class="field">
+          <label>Position</label>
+          <div class="xyz-row">
+            <input type="number" id="px" step="0.1" oninput="applyTransform()"/>
+            <input type="number" id="py" step="0.1" oninput="applyTransform()"/>
+            <input type="number" id="pz" step="0.1" oninput="applyTransform()"/>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:8px;opacity:0.3;margin-top:2px;padding:0 4px"><span>X</span><span>Y</span><span>Z</span></div>
+        </div>
+        <div class="field">
+          <label>Rotation (°)</label>
+          <div class="xyz-row">
+            <input type="number" id="rx" step="1" oninput="applyTransform()"/>
+            <input type="number" id="ry" step="1" oninput="applyTransform()"/>
+            <input type="number" id="rz" step="1" oninput="applyTransform()"/>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:8px;opacity:0.3;margin-top:2px;padding:0 4px"><span>X</span><span>Y</span><span>Z</span></div>
+        </div>
+        <div class="field">
+          <label>Scale</label>
+          <div class="xyz-row">
+            <input type="number" id="sx" step="0.1" min="0.01" oninput="applyTransform()"/>
+            <input type="number" id="sy" step="0.1" min="0.01" oninput="applyTransform()"/>
+            <input type="number" id="sz" step="0.1" min="0.01" oninput="applyTransform()"/>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:8px;opacity:0.3;margin-top:2px;padding:0 4px"><span>X</span><span>Y</span><span>Z</span></div>
+        </div>
+        <div class="field">
+          <label>Name</label>
+          <input type="text" id="sel-name-input" oninput="renameSelected(this.value)"/>
+        </div>
+        <div class="field">
+          <label>Visible</label>
+          <input type="checkbox" id="sel-visible" onchange="toggleVisible(this.checked)" style="width:auto;accent-color:#76ff03"/>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/controls/TransformControls.js"></script>
+
+<script>
+const API = ''
+let assets = []
+let sceneObjects = []   // { id, name, type, assetId, mesh, visible }
+let selectedObj = null
+let activeTool  = 'translate'
+let _animId
+
+// ── Three.js setup ────────────────────────────────────────────────────────────
+const viewport  = document.getElementById('viewport')
+const scene     = new THREE.Scene()
+scene.background = new THREE.Color(0x040a04)
+
+const camera = new THREE.PerspectiveCamera(50, 1, 0.01, 1000)
+camera.position.set(12, 10, 12)
+
+const renderer = new THREE.WebGLRenderer({ antialias: true })
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+renderer.shadowMap.enabled = true
+renderer.shadowMap.type    = THREE.PCFSoftShadowMap
+renderer.outputEncoding    = THREE.sRGBEncoding
+renderer.toneMapping       = THREE.ACESFilmicToneMapping
+viewport.insertBefore(renderer.domElement, viewport.firstChild)
+
+// Lights
+const ambient = new THREE.AmbientLight(0xffffff, 0.5)
+scene.add(ambient)
+const sun = new THREE.DirectionalLight(0xfff5d0, 1.4)
+sun.position.set(20, 30, 10)
+sun.castShadow = true
+sun.shadow.mapSize.setScalar(2048)
+scene.add(sun)
+
+// Grid
+const grid = new THREE.GridHelper(100, 50, 0x1a2e1a, 0x1a2e1a)
+scene.add(grid)
+
+// Axes helper
+const axes = new THREE.AxesHelper(3)
+scene.add(axes)
+
+// Orbit controls
+const orbit = new THREE.OrbitControls(camera, renderer.domElement)
+orbit.enableDamping = true
+orbit.dampingFactor = 0.08
+
+// Transform controls
+const transform = new THREE.TransformControls(camera, renderer.domElement)
+transform.addEventListener('dragging-changed', e => { orbit.enabled = !e.value })
+transform.addEventListener('change', () => {
+  if (selectedObj) syncPropsFromMesh(selectedObj)
+})
+scene.add(transform)
+
+// Raycaster for selection
+const raycaster  = new THREE.Raycaster()
+const mouse      = new THREE.Vector2()
+
+// Resize observer
+const ro = new ResizeObserver(() => resize())
+ro.observe(viewport)
+function resize() {
+  const w = viewport.clientWidth, h = viewport.clientHeight
+  renderer.setSize(w, h)
+  camera.aspect = w / h
+  camera.updateProjectionMatrix()
+}
+resize()
+
+// Animate
+function animate() {
+  _animId = requestAnimationFrame(animate)
+  orbit.update()
+  renderer.render(scene, camera)
+}
+animate()
+
+// ── Selection ─────────────────────────────────────────────────────────────────
+renderer.domElement.addEventListener('click', e => {
+  if (transform.dragging) return
+  const rect = renderer.domElement.getBoundingClientRect()
+  mouse.x = ((e.clientX - rect.left) / rect.width)  *  2 - 1
+  mouse.y = ((e.clientY - rect.top)  / rect.height) * -2 + 1
+  raycaster.setFromCamera(mouse, camera)
+  const meshes = sceneObjects.map(o => o.mesh).filter(Boolean)
+  const hits   = raycaster.intersectObjects(meshes, true)
+  if (hits.length) {
+    // find root mesh
+    let obj = hits[0].object
+    while (obj.parent && obj.parent !== scene) obj = obj.parent
+    const so = sceneObjects.find(o => o.mesh === obj)
+    if (so) { selectObject(so); return }
+  }
+  deselectAll()
+})
+
+function selectObject(so) {
+  selectedObj = so
+  sceneObjects.forEach(o => {
+    if (o.mesh) o.mesh.traverse(c => { if (c.isMesh) c.material = c._origMat })
+  })
+  if (so.mesh) {
+    so.mesh.traverse(c => {
+      if (c.isMesh) {
+        c._origMat = c.material
+        c.material = c.material.clone()
+        c.material.emissive = new THREE.Color(0.08, 0.18, 0.08)
+      }
+    })
+  }
+  transform.attach(so.mesh)
+  transform.setMode(activeTool)
+  renderHierarchy()
+  syncPropsFromMesh(so)
+}
+
+function deselectAll() {
+  if (selectedObj?.mesh) {
+    selectedObj.mesh.traverse(c => { if (c.isMesh && c._origMat) c.material = c._origMat })
+  }
+  transform.detach()
+  selectedObj = null
+  renderHierarchy()
+  document.getElementById('sel-props').style.display = 'none'
+}
+
+// ── Tool switching ────────────────────────────────────────────────────────────
+function setTool(t) {
+  activeTool = t
+  transform.setMode(t)
+  document.querySelectorAll('.hbtn[id^=tool-], .tool[id^=t-]').forEach(el => el.classList.remove('active'))
+  document.getElementById('tool-'+t)?.classList.add('active')
+  document.getElementById('t-'+t)?.classList.add('active')
+}
+
+window.addEventListener('keydown', e => {
+  if (document.activeElement.tagName === 'INPUT') return
+  if (e.key==='w'||e.key==='W') setTool('translate')
+  if (e.key==='e'||e.key==='E') setTool('rotate')
+  if (e.key==='r'||e.key==='R') setTool('scale')
+  if (e.key==='Delete'||e.key==='Backspace') deleteSelected()
+  if ((e.key==='f'||e.key==='F') && selectedObj?.mesh) focusSelected()
+  if (e.key==='Escape') deselectAll()
+})
+
+function focusSelected() {
+  const box = new THREE.Box3().setFromObject(selectedObj.mesh)
+  const center = box.getCenter(new THREE.Vector3())
+  const size   = box.getSize(new THREE.Vector3()).length()
+  orbit.target.copy(center)
+  camera.position.copy(center).add(new THREE.Vector3(size, size*0.6, size))
+  orbit.update()
+}
+
+// ── Props sync ────────────────────────────────────────────────────────────────
+function syncPropsFromMesh(so) {
+  const m = so.mesh
+  if (!m) return
+  const p = m.position, r = m.rotation, s = m.scale
+  document.getElementById('px').value = r2(p.x)
+  document.getElementById('py').value = r2(p.y)
+  document.getElementById('pz').value = r2(p.z)
+  document.getElementById('rx').value = r2(THREE.MathUtils.radToDeg(r.x))
+  document.getElementById('ry').value = r2(THREE.MathUtils.radToDeg(r.y))
+  document.getElementById('rz').value = r2(THREE.MathUtils.radToDeg(r.z))
+  document.getElementById('sx').value = r2(s.x)
+  document.getElementById('sy').value = r2(s.y)
+  document.getElementById('sz').value = r2(s.z)
+  document.getElementById('sel-name').textContent     = so.name
+  document.getElementById('sel-name-input').value     = so.name
+  document.getElementById('sel-visible').checked      = so.visible !== false
+  document.getElementById('sel-props').style.display  = 'block'
+}
+
+function applyTransform() {
+  if (!selectedObj?.mesh) return
+  const m = selectedObj.mesh
+  m.position.set(+document.getElementById('px').value, +document.getElementById('py').value, +document.getElementById('pz').value)
+  m.rotation.set(
+    THREE.MathUtils.degToRad(+document.getElementById('rx').value),
+    THREE.MathUtils.degToRad(+document.getElementById('ry').value),
+    THREE.MathUtils.degToRad(+document.getElementById('rz').value),
+  )
+  m.scale.set(+document.getElementById('sx').value, +document.getElementById('sy').value, +document.getElementById('sz').value)
+}
+
+function renameSelected(v) { if (selectedObj) { selectedObj.name = v; renderHierarchy() } }
+function toggleVisible(v)  { if (selectedObj?.mesh) { selectedObj.visible = v; selectedObj.mesh.visible = v } }
+function r2(n) { return Math.round(n*100)/100 }
+
+// ── Object management ─────────────────────────────────────────────────────────
+let _uidc = 1
+function mkId() { return 'obj_' + (_uidc++) }
+
+function addPrimitive(type) {
+  let geo, color = 0x4caf50
+  if (type==='box')    geo = new THREE.BoxGeometry(1,1,1)
+  if (type==='sphere') geo = new THREE.SphereGeometry(0.5, 16, 12)
+  if (type==='plane')  geo = new THREE.PlaneGeometry(4,4);
+  const mat  = new THREE.MeshStandardMaterial({ color, roughness:0.8, metalness:0.1 })
+  const mesh = new THREE.Mesh(geo, mat)
+  mesh.castShadow = mesh.receiveShadow = true
+  if (type==='plane') mesh.rotation.x = -Math.PI/2
+  scene.add(mesh)
+  const so = { id:mkId(), name:type+'_'+_uidc, type:'primitive', mesh, visible:true }
+  sceneObjects.push(so)
+  selectObject(so)
+  renderHierarchy()
+  toast('Added ' + type)
+}
+
+function spawnAsset(asset) {
+  const loader = new THREE.GLTFLoader()
+  loader.load(`${API}/api/assets/${asset.id}/file`, gltf => {
+    const mesh = gltf.scene
+    mesh.castShadow = true
+    mesh.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true } })
+    // Center on origin at ground
+    const box = new THREE.Box3().setFromObject(mesh)
+    const off = box.getCenter(new THREE.Vector3())
+    off.y = box.min.y
+    mesh.position.sub(off)
+    scene.add(mesh)
+    const so = { id:mkId(), name:asset.display_name, type:'asset', assetId:asset.id, gamePath:asset.game_path, mesh, visible:true }
+    sceneObjects.push(so)
+    selectObject(so)
+    renderHierarchy()
+    toast('Placed: ' + asset.display_name)
+  }, undefined, err => { console.error(err); toast('Failed to load model', true) })
+}
+
+function deleteSelected() {
+  if (!selectedObj) return
+  scene.remove(selectedObj.mesh)
+  selectedObj.mesh.traverse(c => { c.geometry?.dispose(); c.material?.dispose() })
+  sceneObjects = sceneObjects.filter(o => o !== selectedObj)
+  deselectAll()
+  renderHierarchy()
+}
+
+function clearScene() {
+  if (!confirm('Clear all objects?')) return
+  sceneObjects.forEach(o => {
+    scene.remove(o.mesh)
+    o.mesh.traverse(c => { c.geometry?.dispose(); c.material?.dispose() })
+  })
+  sceneObjects = []
+  deselectAll()
+  renderHierarchy()
+  toast('Scene cleared')
+}
+
+// ── Hierarchy panel ───────────────────────────────────────────────────────────
+function renderHierarchy() {
+  const list = document.getElementById('scene-list')
+  const none = document.getElementById('no-objects')
+  none.style.display = sceneObjects.length ? 'none' : 'block'
+  list.innerHTML = ''
+  sceneObjects.forEach(so => {
+    const el = document.createElement('div')
+    el.className = 'scene-item' + (so === selectedObj ? ' selected' : '')
+    el.innerHTML = `
+      <span style="font-size:9px;opacity:0.35">${so.type==='asset'?'⬡':'■'}</span>
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px">${esc(so.name)}</span>
+      <span class="si-vis" onclick="event.stopPropagation();toggleVis(${sceneObjects.indexOf(so)})">${so.visible!==false?'👁':'○'}</span>
+    `
+    el.addEventListener('click', () => selectObject(so))
+    list.appendChild(el)
+  })
+}
+
+function toggleVis(i) {
+  const so = sceneObjects[i]
+  so.visible = !so.visible
+  so.mesh.visible = so.visible
+  renderHierarchy()
+}
+
+// ── Asset browser ─────────────────────────────────────────────────────────────
+const TYPE_COLORS = { enemy:'#ef9a9a', item:'#a5d6a7', npc:'#ce93d8', structure:'#b0bec5', terrain:'#bcaaa4', effect:'#fff176', misc:'#888' }
+
+async function loadAssets() {
+  const r = await fetch(`${API}/api/assets`)
+  assets = (await r.json()).filter(a => a.ext==='.glb'||a.ext==='.gltf')
+  renderAssetBrowser()
+}
+
+function renderAssetBrowser() {
+  const query = document.getElementById('asset-search').value.toLowerCase()
+  const browser = document.getElementById('asset-browser')
+  browser.innerHTML = ''
+  const filtered = assets.filter(a => !query || a.display_name.toLowerCase().includes(query))
+  filtered.forEach(a => {
+    const el = document.createElement('div')
+    el.className = 'asset-item'
+    el.innerHTML = `
+      <div class="ai-dot" style="background:${TYPE_COLORS[a.type]||'#888'}"></div>
+      <div class="ai-name" style="flex:1">${esc(a.display_name)}</div>
+      <div class="ai-type">${a.type}</div>
+    `
+    el.title = `Click to place "${a.display_name}"`
+    el.addEventListener('click', () => spawnAsset(a))
+    browser.appendChild(el)
+  })
+  if (!filtered.length) browser.innerHTML = '<div style="text-align:center;opacity:0.25;padding:20px 10px;font-size:10px">No models</div>'
+}
+
+document.getElementById('asset-search').addEventListener('input', renderAssetBrowser)
+
+// ── Export / Save ─────────────────────────────────────────────────────────────
+function sceneToJSON() {
+  return sceneObjects.map(so => {
+    const m = so.mesh
+    return {
+      id:       so.id,
+      name:     so.name,
+      type:     so.type,
+      assetId:  so.assetId || null,
+      gamePath: so.gamePath || null,
+      position: { x: r2(m.position.x), y: r2(m.position.y), z: r2(m.position.z) },
+      rotation: { x: r2(THREE.MathUtils.radToDeg(m.rotation.x)), y: r2(THREE.MathUtils.radToDeg(m.rotation.y)), z: r2(THREE.MathUtils.radToDeg(m.rotation.z)) },
+      scale:    { x: r2(m.scale.x), y: r2(m.scale.y), z: r2(m.scale.z) },
+      visible:  so.visible !== false,
+    }
+  })
+}
+
+function exportScene() {
+  const data = sceneToJSON()
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' })
+  const url  = URL.createObjectURL(blob)
+  const a    = document.createElement('a'); a.href=url; a.download='scene_export.json'; a.click()
+  URL.revokeObjectURL(url)
+  toast('Scene exported')
+}
+
+async function saveScene() {
+  const data = sceneToJSON()
+  // Post each object to world API
+  // First clear existing world objects (optional — could diff)
+  for (const obj of data) {
+    if (!obj.assetId) continue   // skip primitives from world save
+    await fetch(`${API}/api/world`, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify({
+        name:      obj.name,
+        type:      'scene-object',
+        asset_id:  obj.assetId,
+        modelPath: obj.gamePath,
+        position:  obj.position,
+        rotation:  { y: obj.rotation.y * Math.PI / 180 },
+        scale:     obj.scale.x,
+      })
+    })
+  }
+  toast('Scene saved to world objects')
+}
+
+// ── Utils ─────────────────────────────────────────────────────────────────────
+function esc(s) { return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
+let _tt
+function toast(msg, err=false) {
+  const el = document.getElementById('toast')
+  el.textContent = msg
+  el.style.borderColor = err ? 'rgba(239,83,80,0.5)' : 'rgba(76,175,80,0.4)'
+  el.classList.add('show')
+  clearTimeout(_tt)
+  _tt = setTimeout(() => el.classList.remove('show'), 2200)
+}
+
+loadAssets()
+</script>
+</body>
+</html>
