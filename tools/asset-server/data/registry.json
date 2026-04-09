@@ -567,5 +567,18 @@
     "created_at": "2026-04-08T22:01:33.816805",
     "level_req": 70,
     "xp": 220
+  },
+  "cc67e30c": {
+    "id": "cc67e30c",
+    "filename": "handpainted_tree_pack.glb",
+    "original_name": "handpainted_tree_pack.glb",
+    "display_name": "Handpainted Tree Pack",
+    "type": "misc",
+    "path": "/uploads/cc67e30c_handpainted_tree_pack.glb",
+    "game_path": "/assets/models/handpainted_tree_pack.glb",
+    "size": 8560336,
+    "ext": ".glb",
+    "tags": [],
+    "created_at": "2026-04-09T01:00:45.729329"
   }
 }

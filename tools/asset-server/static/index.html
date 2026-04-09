@@ -428,8 +428,20 @@ label{font-size:11px;opacity:0.8;letter-spacing:0.1em;text-transform:uppercase;d
 <div id="toast"></div>
 
 <!-- Three.js for 3D preview -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/loaders/GLTFLoader.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.158.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+  import * as _THREE from 'three'
+  import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
+  window.THREE = { ..._THREE, GLTFLoader }
+  document.dispatchEvent(new Event('three-ready'))
+</script>
 
 <script>
 const API = ''   // same origin
@@ -940,7 +952,10 @@ function _buildPreviewScene(id) {
     previewRenderer.domElement.style.height = H + 'px'
     wrap.appendChild(previewRenderer.domElement)
 
-  previewControls = _makeOrbit(camera, previewRenderer.domElement)
+  let _dirty = true
+  const markDirty = () => { _dirty = true }
+
+  previewControls = _makeOrbit(camera, previewRenderer.domElement, markDirty)
 
   // Neutral white lighting so model colours read correctly
   previewScene.add(new THREE.AmbientLight(0xffffff, 1.0))
@@ -967,13 +982,15 @@ function _buildPreviewScene(id) {
       const dist = Math.max(size * 1.2, 1.5)
       camera.position.set(dist, dist * 0.7, dist)
       camera.lookAt(0, 0, 0)
-      previewControls.update()
       previewScene.add(model)
+      markDirty()
     }, undefined, err => console.error('[AssetModal] GLB load error', err))
   }
 
   const animate = () => {
     previewAF = requestAnimationFrame(animate)
+    if (!_dirty) return
+    _dirty = false
     previewRenderer.render(previewScene, camera)
   }
   animate()
@@ -986,7 +1003,7 @@ function _buildPreviewScene(id) {
 }
 
 // ── Orbit controller (no OrbitControls dependency) ───────────────────────────
-function _makeOrbit(camera, el) {
+function _makeOrbit(camera, el, onUpdate) {
   const target = new THREE.Vector3(0, 0, 0)
   let phi    = Math.acos(Math.max(-1, Math.min(1, camera.position.y / camera.position.length())))
   let theta  = Math.atan2(camera.position.x, camera.position.z)
@@ -1002,6 +1019,7 @@ function _makeOrbit(camera, el) {
       target.z + radius * Math.sin(phi) * Math.cos(theta)
     )
     camera.lookAt(target)
+    if (onUpdate) onUpdate()
   }
   sync()
 
@@ -1646,7 +1664,7 @@ async function exportSoundManifest() {
   toast('Manifest exported')
 }
 
-init()
+document.addEventListener('three-ready', () => init(), { once: true })
 </script>
 </body>
 </html>
