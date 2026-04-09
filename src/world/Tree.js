@@ -1,27 +1,22 @@
 /**
  * Tree — individual interactable tree entity.
  * States: STANDING → STUMP → (respawn) → STANDING
- * Each tree instance takes a tier def from TreeDefs.js for visual/gameplay variation.
+ * Procedural geometry used immediately; swaps to GLB from assets/models/trees/{id}.glb
+ * when available. Chop/fell animations degrade gracefully if GLB lacks named meshes.
  * OWNED BY: world-agent
  */
-import * as THREE from 'three'
+import * as THREE    from 'three'
+import { loadModel } from '../engine/AssetLoader.js'
 
 const RESPAWN_MS = 40_000
 
-// Shared geometry (all tiers reuse these shapes, only materials differ)
+// Shared geometry (all tiers reuse, only materials differ)
 const _trunkGeo = new THREE.CylinderGeometry(0.12, 0.18, 1.8, 6)
 const _canopyGeo = new THREE.ConeGeometry(1.0, 2.2, 6)
 const _stumpGeo  = new THREE.CylinderGeometry(0.14, 0.18, 0.35, 6)
 const _stumpMat  = new THREE.MeshStandardMaterial({ color: 0x795548, roughness: 1 })
 
 export class Tree {
-  /**
-   * @param {string} id
-   * @param {number} x
-   * @param {number} z
-   * @param {number} scale
-   * @param {object} tierDef  — from TREE_TIERS in TreeDefs.js
-   */
   constructor(id, x, z, scale, tierDef) {
     this.id       = id
     this.tier     = tierDef
@@ -30,18 +25,29 @@ export class Tree {
     this._state   = 'standing'
     this._chopsLeft = this._rollChops()
 
-    this.object = this._build(x, z, scale, tierDef)
+    // Persistent wrapper — World.js / raycaster hold this reference forever
+    this.object = new THREE.Group()
+    this.object.position.set(x, 0, z)
+
+    this._buildProcedural(scale, tierDef)
+
+    // Try to swap to GLB; keep procedural if file missing
+    loadModel(`/assets/models/trees/${tierDef.id}.glb`).then(model => {
+      if (!model) return
+      this._clearProcedural()
+      model.scale.setScalar(scale)
+      model.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true } })
+      this.object.add(model)
+      this._glbModel = model
+    })
   }
 
   get isStanding() { return this._state === 'standing' }
 
-  // ── Build ─────────────────────────────────────────────────────────────────
+  // ── Build procedural fallback ─────────────────────────────────────────────
 
-  _build(x, z, scale, tier) {
-    const group = new THREE.Group()
-    group.position.set(x, 0, z)
-
-    const trunkMat  = new THREE.MeshStandardMaterial({ color: tier.trunkColor,  roughness: 1 })
+  _buildProcedural(scale, tier) {
+    const trunkMat  = new THREE.MeshStandardMaterial({ color: tier.trunkColor, roughness: 1 })
     const canopyMat = new THREE.MeshStandardMaterial({ color: tier.canopyColor, roughness: 0.9 })
 
     this._trunk = new THREE.Mesh(_trunkGeo, trunkMat)
@@ -59,19 +65,30 @@ export class Tree {
     this._stump.position.y = 0.17
     this._stump.visible = false
 
-    group.add(this._trunk, this._canopy, this._stump)
-    return group
+    this.object.add(this._trunk, this._canopy, this._stump)
+  }
+
+  _clearProcedural() {
+    this.object.clear()
+    this._trunk  = null
+    this._canopy = null
+    this._stump  = null
   }
 
   // ── Chop ──────────────────────────────────────────────────────────────────
 
-  /** Returns true when the tree falls. */
   chop() {
     if (this._state !== 'standing') return false
     this._chopsLeft--
 
-    this._canopy.rotation.z = (Math.random() - 0.5) * 0.18
-    setTimeout(() => { if (this._canopy) this._canopy.rotation.z = 0 }, 150)
+    if (this._canopy) {
+      this._canopy.rotation.z = (Math.random() - 0.5) * 0.18
+      setTimeout(() => { if (this._canopy) this._canopy.rotation.z = 0 }, 150)
+    } else if (this._glbModel) {
+      // Nudge whole GLB model
+      this._glbModel.rotation.z = (Math.random() - 0.5) * 0.1
+      setTimeout(() => { if (this._glbModel) this._glbModel.rotation.z = 0 }, 150)
+    }
 
     if (this._chopsLeft <= 0) {
       this._fell()
@@ -82,18 +99,20 @@ export class Tree {
 
   _fell() {
     this._state = 'stump'
-    this._trunk.visible  = false
-    this._canopy.visible = false
-    this._stump.visible  = true
+    if (this._trunk)  this._trunk.visible  = false
+    if (this._canopy) this._canopy.visible = false
+    if (this._stump)  this._stump.visible  = true
+    if (this._glbModel) this._glbModel.visible = false
     setTimeout(() => this._respawn(), RESPAWN_MS)
   }
 
   _respawn() {
-    this._state      = 'standing'
-    this._chopsLeft  = this._rollChops()
-    this._trunk.visible  = true
-    this._canopy.visible = true
-    this._stump.visible  = false
+    this._state     = 'standing'
+    this._chopsLeft = this._rollChops()
+    if (this._trunk)  this._trunk.visible  = true
+    if (this._canopy) this._canopy.visible = true
+    if (this._stump)  this._stump.visible  = false
+    if (this._glbModel) this._glbModel.visible = true
   }
 
   _rollChops() {

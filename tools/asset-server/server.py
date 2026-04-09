@@ -17,11 +17,13 @@ import aiofiles
 BASE        = Path(__file__).parent
 DATA_DIR    = BASE / "data"
 UPLOAD_DIR  = BASE / "uploads" / "models"
+UPLOAD_AUDIO = BASE / "uploads" / "audio"
 STATIC_DIR  = BASE / "static"
 GAME_ASSETS = BASE.parent.parent / "assets"   # verdant_protocol/assets/
 GAME_MODELS = GAME_ASSETS / "models"
+GAME_AUDIO  = GAME_ASSETS / "audio"
 
-for d in [DATA_DIR, UPLOAD_DIR, STATIC_DIR, GAME_MODELS, UPLOAD_AUDIO, GAME_AUDIO]:
+for d in [DATA_DIR, UPLOAD_DIR, UPLOAD_AUDIO, STATIC_DIR, GAME_MODELS, GAME_AUDIO]:
     d.mkdir(parents=True, exist_ok=True)
 
 REGISTRY_FILE      = DATA_DIR / "registry.json"
@@ -30,8 +32,6 @@ ANIMATIONS_FILE    = DATA_DIR / "animations.json"
 QUESTS_FILE        = DATA_DIR / "quests.json"
 DIALOGUES_FILE     = DATA_DIR / "dialogues.json"
 SOUNDS_FILE        = DATA_DIR / "sounds.json"
-UPLOAD_AUDIO       = BASE / "uploads" / "audio"
-GAME_AUDIO         = GAME_ASSETS / "audio"
 
 def _load(path: Path, default):
     if path.exists():
@@ -153,6 +153,63 @@ def delete_asset(asset_id: str):
     _save(REGISTRY_FILE, registry)
     _sync_game_registry()
     return {"ok": True}
+
+@app.post("/api/assets/{asset_id}/overwrite")
+async def overwrite_asset(asset_id: str, file: UploadFile = File(...)):
+    """Replace a procedural or existing asset with an uploaded GLB.
+    Copies the GLB into assets/models/ so the game picks it up immediately.
+    Updates registry entry: ext, path, game_path, source → 'uploaded'.
+    """
+    a = registry.get(asset_id)
+    if not a:
+        raise HTTPException(404, "Asset not found")
+
+    ext = Path(file.filename).suffix.lower()
+    if ext not in {".glb", ".gltf"}:
+        raise HTTPException(400, "Only GLB/GLTF files accepted for overwrite")
+
+    content   = await file.read()
+    safe_name = file.filename.replace(" ", "_")
+
+    # Use the canonical glb_path stored in the registry so the game always finds the file.
+    # glb_path looks like "/assets/models/trees/normal.glb"
+    glb_path  = a.get("glb_path")
+    if glb_path:
+        # Derive dest inside GAME_ASSETS from the path string
+        rel       = Path(glb_path.lstrip("/"))          # assets/models/trees/normal.glb
+        game_dest = BASE.parent.parent / rel            # verdant_protocol/assets/models/trees/normal.glb
+        game_dest.parent.mkdir(parents=True, exist_ok=True)
+        game_dest.write_bytes(content)
+        game_path = glb_path
+    else:
+        # Fallback for assets without a glb_path (uploaded files not yet in seed)
+        category  = a.get("category", "misc").replace("structures/", "").replace("world/", "")
+        game_dir  = GAME_MODELS / category
+        game_dir.mkdir(parents=True, exist_ok=True)
+        game_dest = game_dir / safe_name
+        game_dest.write_bytes(content)
+        game_path = f"/assets/models/{category}/{safe_name}"
+
+    # Also keep a copy in uploads/ for the studio file endpoint
+    category  = a.get("category", "misc").replace("structures/", "").replace("world/", "")
+    dest_dir  = UPLOAD_DIR / category
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    dest = dest_dir / f"{asset_id}_{safe_name}"
+    dest.write_bytes(content)
+
+    # Update registry entry
+    a.update({
+        "filename":     safe_name,
+        "original_name": file.filename,
+        "ext":          ext,
+        "size":         len(content),
+        "path":         f"/uploads/{category}/{asset_id}_{safe_name}",
+        "game_path":    game_path,
+        "source":       "uploaded",
+    })
+    _save(REGISTRY_FILE, registry)
+    _sync_game_registry()
+    return a
 
 @app.get("/api/assets/{asset_id}/file")
 def get_asset_file(asset_id: str):
@@ -399,6 +456,125 @@ def _sync_game_registry():
             }
     game_reg = GAME_ASSETS / "registry.json"
     game_reg.write_text(json.dumps(out, indent=2))
+
+MODEL_EXTS = {".glb", ".gltf"}
+AUDIO_EXTS = {".mp3", ".ogg", ".wav", ".flac", ".m4a", ".webm"}
+
+@app.post("/api/sync-assets")
+def sync_assets_from_folder():
+    """
+    Scan assets/models/** and assets/audio/** for files not yet in the registry.
+    Auto-registers any new files found, copies them into the uploads folder,
+    and writes assets/registry.json.
+    Returns a list of newly registered entries.
+    """
+    import datetime as dt
+    added = []
+
+    # Build a set of already-known game_paths
+    known = {a.get("game_path") for a in registry.values() if a.get("game_path")}
+
+    # ── Models ────────────────────────────────────────────────────────────────
+    for path in sorted(GAME_MODELS.rglob("*")):
+        if not path.is_file():
+            continue
+        ext = path.suffix.lower()
+        if ext not in MODEL_EXTS:
+            continue
+
+        rel      = path.relative_to(GAME_ASSETS)          # models/enemies/drone.glb
+        game_path = f"/assets/{rel.as_posix()}"
+
+        if game_path in known:
+            continue
+
+        asset_id  = str(uuid.uuid4())[:8]
+        safe_name = path.name.replace(" ", "_")
+        # Mirror into uploads so server can serve it
+        category_dir = UPLOAD_DIR / rel.parent.relative_to(Path("models"))
+        category_dir.mkdir(parents=True, exist_ok=True)
+        dest = category_dir / f"{asset_id}_{safe_name}"
+        shutil.copy2(path, dest)
+
+        category = rel.parent.as_posix().replace("models/", "").replace("models", "")
+
+        name = path.stem.replace("_", " ").title()
+        entry = {
+            "id":           asset_id,
+            "filename":     safe_name,
+            "original_name": path.name,
+            "display_name": name,
+            "type":         _guess_type(category),
+            "category":     category or "misc",
+            "path":         f"/uploads/{category}/{asset_id}_{safe_name}",
+            "game_path":    game_path,
+            "source":       "folder",
+            "size":         path.stat().st_size,
+            "ext":          ext,
+            "tags":         [t for t in category.split("/") if t],
+            "description":  "",
+            "created_at":   dt.datetime.utcnow().isoformat(),
+        }
+        registry[asset_id] = entry
+        added.append(entry)
+        known.add(game_path)
+
+    # ── Audio ─────────────────────────────────────────────────────────────────
+    for path in sorted(GAME_AUDIO.rglob("*")):
+        if not path.is_file():
+            continue
+        ext = path.suffix.lower()
+        if ext not in AUDIO_EXTS:
+            continue
+
+        rel       = path.relative_to(GAME_ASSETS)
+        game_path = f"/assets/{rel.as_posix()}"
+
+        if game_path in known:
+            continue
+
+        sound_id  = str(uuid.uuid4())[:8]
+        safe_name = path.name.replace(" ", "_")
+        sub       = rel.parent.as_posix().replace("audio/", "").replace("audio", "") or "sfx"
+        dest_dir  = UPLOAD_AUDIO / sub
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        dest = dest_dir / f"{sound_id}_{safe_name}"
+        shutil.copy2(path, dest)
+
+        name  = path.stem.replace("_", " ").title()
+        entry = {
+            "id":           sound_id,
+            "filename":     safe_name,
+            "display_name": name,
+            "type":         sub if sub in ("sfx","music","ambient") else "sfx",
+            "path":         f"/audio/{sub}/{sound_id}_{safe_name}",
+            "game_path":    game_path,
+            "source":       "folder",
+            "scene":        "",
+            "loop":         False,
+            "volume":       1.0,
+            "size":         path.stat().st_size,
+            "ext":          ext,
+            "created_at":   __import__("datetime").datetime.utcnow().isoformat(),
+        }
+        sounds[sound_id] = entry
+        added.append(entry)
+        known.add(game_path)
+
+    if added:
+        _save(REGISTRY_FILE, registry)
+        _save(SOUNDS_FILE, sounds)
+        _sync_game_registry()
+
+    return {"added": len(added), "entries": added}
+
+def _guess_type(category: str) -> str:
+    c = category.lower()
+    if "enem" in c:   return "enemy"
+    if "player" in c: return "player"
+    if "tree" in c or "ore" in c or "gather" in c or "world" in c: return "world"
+    if "struct" in c or "station" in c or "build" in c: return "structure"
+    return "misc"
 
 # ── Quests ───────────────────────────────────────────────────────────────────
 

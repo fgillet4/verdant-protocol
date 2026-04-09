@@ -1,33 +1,42 @@
 /**
- * GatherNode — a small interactable plant/fungi cluster in the world.
- * Types: 'herb' (→ wildHerbs) | 'fungi' (→ fungalMass)
+ * GatherNode — small interactable plant/fungi cluster.
+ * Types: 'herb' | 'fungi'
  * States: AVAILABLE → DEPLETED → (respawn) → AVAILABLE
+ * Builds procedurally; swaps to GLB from assets/models/gather/{herb|fungi}.glb.
  * OWNED BY: world-agent
  */
-import * as THREE from 'three'
+import * as THREE    from 'three'
+import { loadModel } from '../engine/AssetLoader.js'
 
 const HERB_COLOR  = 0x7cb342
 const FUNGI_COLOR = 0x00e5cc
 const FUNGI_EMIT  = 0x00c4aa
 
 export class GatherNode {
-  /**
-   * @param {string} id
-   * @param {number} x
-   * @param {number} z
-   * @param {'herb'|'fungi'} type
-   */
   constructor(id, x, z, type) {
     this.id       = id
     this.type     = type
     this.position = new THREE.Vector3(x, 0, z)
     this._available = true
-    this.object   = this._build(x, z, type)
+
+    this.object = new THREE.Group()
+    this.object.position.set(x, 0, z)
+
+    this._parts = []
+    this._buildProcedural(type)
+
+    loadModel(`/assets/models/gather/${type}.glb`).then(model => {
+      if (!model) return
+      this.object.clear()
+      this._parts = []
+      model.traverse(c => { if (c.isMesh) c.castShadow = true })
+      this.object.add(model)
+      this._glbModel = model
+    })
   }
 
   get isAvailable() { return this._available }
 
-  /** Returns itemId that was gathered, or null if depleted. */
   gather() {
     if (!this._available) return null
     this._available = false
@@ -38,59 +47,59 @@ export class GatherNode {
 
   // ── Build ─────────────────────────────────────────────────────────────────
 
-  _build(x, z, type) {
-    const group = new THREE.Group()
-    group.position.set(x, 0, z)
-    this._parts = []
-
+  _buildProcedural(type) {
     if (type === 'herb') {
-      this._buildHerb(group)
+      this._buildHerb()
     } else {
-      this._buildFungi(group)
+      this._buildFungi()
     }
-    return group
   }
 
-  _buildHerb(group) {
+  _buildHerb() {
     const mat = new THREE.MeshStandardMaterial({ color: HERB_COLOR, roughness: 0.8, side: THREE.DoubleSide })
     for (let i = 0; i < 4; i++) {
-      const leaf = new THREE.Mesh(new THREE.PlaneGeometry(0.18, 0.28), mat)
+      const leaf  = new THREE.Mesh(new THREE.PlaneGeometry(0.18, 0.28), mat)
       const angle = (i / 4) * Math.PI * 2
       leaf.position.set(Math.cos(angle) * 0.1, 0.14, Math.sin(angle) * 0.1)
       leaf.rotation.set(-0.3 + Math.random() * 0.3, angle, 0)
       leaf.castShadow = true
       this._parts.push(leaf)
-      group.add(leaf)
+      this.object.add(leaf)
     }
   }
 
-  _buildFungi(group) {
+  _buildFungi() {
     const stemMat = new THREE.MeshStandardMaterial({ color: 0xd4b896 })
-    const capMat  = new THREE.MeshStandardMaterial({
-      color: FUNGI_COLOR, emissive: FUNGI_EMIT, emissiveIntensity: 0.6, roughness: 0.4,
-    })
+    const capMat  = new THREE.MeshStandardMaterial({ color: FUNGI_COLOR, emissive: FUNGI_EMIT, emissiveIntensity: 0.6, roughness: 0.4 })
     for (let i = 0; i < 3; i++) {
       const angle = (i / 3) * Math.PI * 2
-      const r     = 0.1 + Math.random() * 0.06
-      const s     = 0.5 + Math.random() * 0.5
-
+      const r = 0.1 + Math.random() * 0.06
+      const s = 0.5 + Math.random() * 0.5
       const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.035, 0.18 * s, 5), stemMat)
       stem.position.set(Math.cos(angle) * r, 0.09 * s, Math.sin(angle) * r)
-
-      const cap  = new THREE.Mesh(new THREE.SphereGeometry(0.08 * s, 7, 5, 0, Math.PI * 2, 0, Math.PI / 2), capMat)
+      const cap = new THREE.Mesh(new THREE.SphereGeometry(0.08 * s, 7, 5, 0, Math.PI * 2, 0, Math.PI / 2), capMat)
       cap.position.set(Math.cos(angle) * r, 0.18 * s, Math.sin(angle) * r)
-
       this._parts.push(stem, cap)
-      group.add(stem, cap)
+      this.object.add(stem, cap)
     }
   }
 
   // ── State ─────────────────────────────────────────────────────────────────
 
   _showDepleted() {
+    if (this._glbModel) {
+      this._glbModel.traverse(c => {
+        if (c.isMesh) {
+          c.material = c.material.clone()
+          c.material.transparent = true
+          c.material.opacity = 0.25
+        }
+      })
+      return
+    }
     for (const p of this._parts) {
       p.material = p.material.clone()
-      p.material.opacity   = 0.25
+      p.material.opacity     = 0.25
       p.material.transparent = true
       if (p.material.emissiveIntensity !== undefined) p.material.emissiveIntensity = 0
     }
@@ -98,8 +107,17 @@ export class GatherNode {
 
   _respawn() {
     this._available = true
+    if (this._glbModel) {
+      this._glbModel.traverse(c => {
+        if (c.isMesh) {
+          c.material.opacity     = 1
+          c.material.transparent = false
+        }
+      })
+      return
+    }
     for (const p of this._parts) {
-      p.material.opacity   = 1
+      p.material.opacity     = 1
       p.material.transparent = false
       if (this.type === 'fungi' && p.material.emissiveIntensity !== undefined) {
         p.material.emissiveIntensity = 0.6

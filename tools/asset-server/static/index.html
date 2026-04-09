@@ -3,26 +3,29 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
 <title>Verdant Protocol — Asset Studio</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#060d06;color:#c8e6c9;font-family:'Courier New',monospace;font-size:12px;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+body{background:#060d06;color:#e8f5e9;font-family:'Courier New',monospace;font-size:14px;display:flex;flex-direction:column;height:100vh;overflow:hidden}
 a{color:#76ff03;text-decoration:none}
 
 /* ── Header ── */
 #header{background:rgba(5,12,5,0.95);border-bottom:1px solid rgba(76,175,80,0.2);padding:10px 20px;display:flex;align-items:center;gap:16px;flex-shrink:0}
-#header h1{color:#76ff03;font-size:14px;font-weight:300;letter-spacing:0.3em;text-transform:uppercase}
+#header h1{color:#76ff03;font-size:15px;font-weight:300;letter-spacing:0.3em;text-transform:uppercase}
 #status-dot{width:7px;height:7px;border-radius:50%;background:#ef5350;flex-shrink:0;margin-left:auto}
 #status-dot.ok{background:#76ff03}
-#status-label{font-size:10px;opacity:0.5;letter-spacing:0.1em}
+#status-label{font-size:12px;opacity:0.8;letter-spacing:0.1em}
 
 /* ── Layout ── */
 #layout{display:flex;flex:1;overflow:hidden}
 
 /* ── Sidebar ── */
 #sidebar{width:140px;background:rgba(4,10,4,0.9);border-right:1px solid rgba(76,175,80,0.15);display:flex;flex-direction:column;flex-shrink:0}
-.nav-item{padding:12px 14px;cursor:pointer;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;opacity:0.45;border-left:2px solid transparent;transition:all 0.1s}
-.nav-item:hover{opacity:0.8;background:rgba(76,175,80,0.05)}
+.nav-item{padding:12px 14px;cursor:pointer;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;opacity:0.65;border-left:2px solid transparent;transition:all 0.1s}
+.nav-item:hover{opacity:0.9;background:rgba(76,175,80,0.05)}
 .nav-item.active{opacity:1;color:#76ff03;border-left-color:#76ff03;background:rgba(76,175,80,0.07)}
 
 /* ── Main ── */
@@ -32,10 +35,10 @@ a{color:#76ff03;text-decoration:none}
 
 /* ── Panel ── */
 .panel{background:rgba(5,12,5,0.7);border:1px solid rgba(76,175,80,0.18);border-radius:6px;padding:16px;margin-bottom:14px}
-.panel-title{font-size:9px;letter-spacing:0.18em;text-transform:uppercase;opacity:0.4;margin-bottom:12px}
+.panel-title{font-size:11px;letter-spacing:0.18em;text-transform:uppercase;opacity:0.75;margin-bottom:12px}
 
 /* ── Buttons ── */
-.btn{display:inline-block;padding:5px 14px;border:1px solid rgba(76,175,80,0.4);border-radius:4px;cursor:pointer;font-family:inherit;font-size:10px;letter-spacing:0.08em;background:rgba(76,175,80,0.07);color:#c8e6c9;transition:all 0.1s}
+.btn{display:inline-block;padding:5px 14px;border:1px solid rgba(76,175,80,0.4);border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;letter-spacing:0.08em;background:rgba(76,175,80,0.07);color:#e8f5e9;transition:all 0.1s}
 .btn:hover{background:rgba(76,175,80,0.18);border-color:#76ff03;color:#76ff03}
 .btn.danger{border-color:rgba(239,83,80,0.4);color:#ef9a9a}
 .btn.danger:hover{background:rgba(239,83,80,0.15);border-color:#ef5350;color:#ef5350}
@@ -43,16 +46,16 @@ a{color:#76ff03;text-decoration:none}
 .btn.primary:hover{background:rgba(118,255,3,0.1)}
 
 /* ── Inputs ── */
-input,select,textarea{background:rgba(0,0,0,0.4);border:1px solid rgba(76,175,80,0.25);border-radius:4px;color:#c8e6c9;font-family:inherit;font-size:11px;padding:5px 8px;outline:none;transition:border-color 0.1s}
+input,select,textarea{background:rgba(0,0,0,0.4);border:1px solid rgba(76,175,80,0.25);border-radius:4px;color:#e8f5e9;font-family:inherit;font-size:13px;padding:5px 8px;outline:none;transition:border-color 0.1s}
 input:focus,select:focus,textarea:focus{border-color:rgba(76,175,80,0.6)}
 select option{background:#0a1a0a}
-label{font-size:9px;opacity:0.5;letter-spacing:0.1em;text-transform:uppercase;display:block;margin-bottom:4px}
+label{font-size:11px;opacity:0.8;letter-spacing:0.1em;text-transform:uppercase;display:block;margin-bottom:4px}
 .field{margin-bottom:10px}
 
 /* ── Upload zone ── */
 #drop-zone{border:1px dashed rgba(76,175,80,0.3);border-radius:6px;padding:28px;text-align:center;cursor:pointer;transition:all 0.15s;margin-bottom:14px}
 #drop-zone:hover,#drop-zone.drag-over{border-color:#76ff03;background:rgba(76,175,80,0.05)}
-#drop-zone p{opacity:0.45;font-size:11px;margin-top:6px}
+#drop-zone p{opacity:0.8;font-size:13px;margin-top:6px}
 #file-input{display:none}
 
 /* ── Asset grid ── */
@@ -62,11 +65,11 @@ label{font-size:9px;opacity:0.5;letter-spacing:0.1em;text-transform:uppercase;di
 .asset-card.selected{border-color:#76ff03}
 .asset-preview{width:100%;aspect-ratio:1;background:rgba(0,0,0,0.4);border-radius:4px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;font-size:28px;overflow:hidden;position:relative}
 .asset-preview canvas{width:100%!important;height:100%!important}
-.asset-name{font-size:10px;font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.asset-type{font-size:9px;opacity:0.45;margin-top:2px;text-transform:uppercase;letter-spacing:0.08em}
-.asset-size{font-size:9px;opacity:0.3;margin-top:1px}
+.asset-name{font-size:12px;font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.asset-type{font-size:11px;opacity:0.7;margin-top:2px;text-transform:uppercase;letter-spacing:0.08em}
+.asset-size{font-size:11px;opacity:0.55;margin-top:1px}
 .asset-actions{display:flex;gap:4px;margin-top:8px}
-.asset-actions .btn{padding:3px 8px;font-size:9px}
+.asset-actions .btn{padding:3px 8px;font-size:11px}
 
 /* ── Type badge ── */
 .badge{display:inline-block;padding:1px 6px;border-radius:3px;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;font-weight:bold}
@@ -77,20 +80,31 @@ label{font-size:9px;opacity:0.5;letter-spacing:0.1em;text-transform:uppercase;di
 .badge-terrain{background:rgba(141,110,99,0.2);color:#bcaaa4}
 .badge-effect{background:rgba(255,213,79,0.2);color:#fff176}
 .badge-misc{background:rgba(255,255,255,0.07);color:#888}
+.badge-player{background:rgba(118,255,3,0.15);color:#76ff03}
+.badge-world{background:rgba(76,175,80,0.2);color:#81c784}
 
 /* ── Code output ── */
-#code-output{background:rgba(0,0,0,0.6);border:1px solid rgba(76,175,80,0.2);border-radius:4px;padding:12px;font-size:11px;white-space:pre;overflow:auto;max-height:400px;color:#a5d6a7;line-height:1.5}
+#code-output{background:rgba(0,0,0,0.6);border:1px solid rgba(76,175,80,0.2);border-radius:4px;padding:12px;font-size:13px;white-space:pre;overflow:auto;max-height:400px;color:#c8f0ca;line-height:1.5}
 
 /* ── 3D Preview modal ── */
-#preview-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;align-items:center;justify-content:center}
+#preview-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:1000;align-items:center;justify-content:center}
 #preview-modal.open{display:flex}
-#preview-wrap{background:rgba(5,12,5,0.98);border:1px solid rgba(76,175,80,0.3);border-radius:8px;width:520px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column}
-#preview-header{padding:12px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(76,175,80,0.15)}
-#preview-title{flex:1;font-size:11px;color:#76ff03}
-#preview-canvas-wrap{flex:1;background:#020802;min-height:360px;position:relative}
-#preview-canvas-wrap canvas{display:block}
-#preview-close{cursor:pointer;opacity:0.5;font-size:14px}
-#preview-close:hover{opacity:1;color:#ef5350}
+#preview-wrap{background:rgba(5,12,5,0.98);border:1px solid rgba(76,175,80,0.3);border-radius:10px;width:660px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(0,0,0,0.7)}
+#preview-header{padding:13px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(76,175,80,0.15);flex-shrink:0}
+#preview-title{flex:1;font-size:13px;color:#76ff03;letter-spacing:0.05em;font-weight:bold}
+#preview-canvas-wrap{background:#606060;position:relative;width:660px;height:380px;flex-shrink:0;overflow:hidden}
+#preview-canvas-wrap canvas{display:block;position:absolute;top:0;left:0}
+#preview-hint{position:absolute;bottom:8px;right:10px;font-size:9px;opacity:0.28;letter-spacing:0.08em;pointer-events:none;z-index:1}
+#preview-info{padding:16px 18px;border-top:1px solid rgba(76,175,80,0.12);display:flex;flex-direction:column;gap:12px;flex-shrink:0}
+#preview-meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.pmeta{font-size:11px;opacity:0.55;letter-spacing:0.06em}
+.pmeta span{color:#e8f5e9;opacity:1}
+#preview-rename{display:flex;gap:8px;align-items:center}
+#preview-name-input{flex:1;font-size:14px;padding:7px 10px;border-radius:5px}
+#preview-type-select{padding:7px 10px;border-radius:5px;font-size:13px}
+#preview-save-btn{padding:7px 18px;font-size:13px;white-space:nowrap}
+#preview-close{cursor:pointer;opacity:0.4;font-size:16px;line-height:1;padding:2px 4px;border-radius:3px;transition:all 0.1s}
+#preview-close:hover{opacity:1;color:#ef5350;background:rgba(239,83,80,0.1)}
 
 /* ── Anim editor ── */
 .anim-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
@@ -99,12 +113,12 @@ label{font-size:9px;opacity:0.5;letter-spacing:0.1em;text-transform:uppercase;di
 
 /* ── World table ── */
 #world-table{width:100%;border-collapse:collapse}
-#world-table th{text-align:left;font-size:9px;opacity:0.4;letter-spacing:0.1em;text-transform:uppercase;padding:4px 8px;border-bottom:1px solid rgba(76,175,80,0.1)}
-#world-table td{padding:5px 8px;border-bottom:1px solid rgba(76,175,80,0.06);font-size:10px}
+#world-table th{text-align:left;font-size:11px;opacity:0.75;letter-spacing:0.1em;text-transform:uppercase;padding:4px 8px;border-bottom:1px solid rgba(76,175,80,0.1)}
+#world-table td{padding:5px 8px;border-bottom:1px solid rgba(76,175,80,0.06);font-size:13px}
 #world-table tr:hover td{background:rgba(76,175,80,0.04)}
 
 /* ── Toast ── */
-#toast{position:fixed;top:20px;right:20px;background:rgba(5,12,5,0.97);border:1px solid rgba(76,175,80,0.4);border-radius:6px;padding:9px 16px;font-size:11px;z-index:2000;opacity:0;transition:opacity 0.2s;pointer-events:none}
+#toast{position:fixed;top:20px;right:20px;background:rgba(5,12,5,0.97);border:1px solid rgba(76,175,80,0.4);border-radius:6px;padding:9px 16px;font-size:13px;z-index:2000;opacity:0;transition:opacity 0.2s;pointer-events:none}
 #toast.show{opacity:1}
 
 /* ── Scrollbar ── */
@@ -143,6 +157,10 @@ label{font-size:9px;opacity:0.5;letter-spacing:0.1em;text-transform:uppercase;di
 
     <!-- ── Assets tab ── -->
     <div class="tab active" id="tab-assets">
+      <div class="panel" style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;margin-bottom:8px">
+        <span style="font-size:11px;opacity:0.7;letter-spacing:0.1em;text-transform:uppercase">Drop files into <code style="color:#76ff03">assets/models/</code> or <code style="color:#76ff03">assets/audio/</code> subfolders to register them automatically</span>
+        <button class="btn primary" id="btn-sync-folder">⟳ Sync from Folder</button>
+      </div>
       <div class="panel">
         <div class="panel-title">Upload Asset</div>
         <div id="drop-zone">
@@ -178,10 +196,12 @@ label{font-size:9px;opacity:0.5;letter-spacing:0.1em;text-transform:uppercase;di
             <input type="text" id="search" placeholder="Search..." style="width:140px;padding:3px 7px"/>
             <select id="filter-type" style="padding:3px 7px">
               <option value="">All types</option>
+              <option value="player">Player</option>
               <option value="enemy">Enemy</option>
+              <option value="world">World</option>
+              <option value="structure">Structure</option>
               <option value="item">Item</option>
               <option value="npc">NPC</option>
-              <option value="structure">Structure</option>
               <option value="terrain">Terrain</option>
               <option value="effect">Effect</option>
               <option value="misc">Misc</option>
@@ -366,14 +386,41 @@ label{font-size:9px;opacity:0.5;letter-spacing:0.1em;text-transform:uppercase;di
   </div><!-- /main -->
 </div><!-- /layout -->
 
-<!-- 3D Preview modal -->
+<!-- Asset Detail Modal -->
 <div id="preview-modal">
   <div id="preview-wrap">
     <div id="preview-header">
-      <span id="preview-title">Model Preview</span>
+      <span id="preview-title">Asset Preview</span>
       <span id="preview-close" onclick="closePreview()">✕</span>
     </div>
-    <div id="preview-canvas-wrap"></div>
+    <div id="preview-canvas-wrap">
+      <div id="preview-hint">drag to rotate · scroll to zoom · right-drag to pan</div>
+    </div>
+    <div id="preview-info">
+      <div id="preview-meta">
+        <div class="pmeta">Type: <span id="pmeta-type">—</span></div>
+        <div class="pmeta">Format: <span id="pmeta-ext">—</span></div>
+        <div class="pmeta">Size: <span id="pmeta-size">—</span></div>
+        <div class="pmeta" style="flex:1">Game path: <span id="pmeta-glbpath" style="color:#76ff03;font-size:10px;letter-spacing:0">—</span></div>
+      </div>
+      <div id="preview-rename">
+        <input id="preview-name-input" class="input" type="text" placeholder="Display name…"/>
+        <select id="preview-type-select" class="select">
+          <option value="player">Player</option>
+          <option value="enemy">Enemy</option>
+          <option value="world">World</option>
+          <option value="structure">Structure</option>
+          <option value="item">Item</option>
+          <option value="npc">NPC</option>
+          <option value="terrain">Terrain</option>
+          <option value="effect">Effect</option>
+          <option value="misc">Misc</option>
+        </select>
+        <span class="btn" id="preview-dl-btn" onclick="downloadAsset(_modalAssetId, this)">⬇ Download GLB</span>
+        <span class="btn primary" onclick="overwriteAsset(_modalAssetId)">↑ Upload GLB</span>
+        <span class="btn primary" id="preview-save-btn" onclick="saveAssetDetails()">Save</span>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -383,7 +430,6 @@ label{font-size:9px;opacity:0.5;letter-spacing:0.1em;text-transform:uppercase;di
 <!-- Three.js for 3D preview -->
 <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/loaders/GLTFLoader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/controls/OrbitControls.js"></script>
 
 <script>
 const API = ''   // same origin
@@ -393,11 +439,86 @@ let assets = []
 let worldObjects = []
 let previewScene, previewRenderer, previewControls, previewAF
 
+// ── Thumbnail renderer ────────────────────────────────────────────────────────
+// Single shared offscreen renderer — render each entity once, cache as image URL.
+const thumbnailCache = new Map()
+let _thumbRenderer = null
+let _thumbCamera   = null
+
+function _ensureThumbRenderer() {
+  if (_thumbRenderer) return
+  _thumbRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, preserveDrawingBuffer: true })
+  _thumbRenderer.setSize(128, 128)
+  _thumbRenderer.setPixelRatio(1)
+  _thumbRenderer.toneMapping = THREE.ACESFilmicToneMapping
+  _thumbCamera = new THREE.PerspectiveCamera(50, 1, 0.01, 200)
+}
+
+async function generateThumbnails() {
+  _ensureThumbRenderer()
+  for (const a of assets) {
+    if (thumbnailCache.has(a.id)) continue
+    let url = null
+    try { url = await _renderThumbnail(a) } catch (e) { console.warn('[thumb] failed for', a.id, e) }
+    if (url) {
+      thumbnailCache.set(a.id, url)
+      const card = document.querySelector(`.asset-card[data-id="${a.id}"] .asset-preview`)
+      if (card) {
+        card.innerHTML = ''
+        card.style.opacity = ''
+        card.style.background = 'transparent'
+        const img = document.createElement('img')
+        img.src = url
+        img.style.cssText = 'width:100%;height:100%;object-fit:contain;border-radius:4px;'
+        card.appendChild(img)
+      }
+    }
+  }
+}
+
+function _renderThumbnail(a) {
+  return new Promise((resolve, reject) => {
+    const scene = new THREE.Scene()
+    scene.background = new THREE.Color(0x606060)
+    scene.add(new THREE.AmbientLight(0xffffff, 0.9))
+    const dir = new THREE.DirectionalLight(0xfff8f0, 2.0)
+    dir.position.set(5, 8, 5)
+    scene.add(dir)
+    const fill = new THREE.DirectionalLight(0xdde8ff, 0.6)
+    fill.position.set(-3, 4, -3)
+    scene.add(fill)
+
+    if (a.ext === 'procedural') {
+      buildProceduralPreview(a, scene, _thumbCamera)
+      _thumbCamera.updateMatrixWorld()
+      _thumbRenderer.render(scene, _thumbCamera)
+      resolve(_thumbRenderer.domElement.toDataURL())
+    } else if (a.ext === '.glb' || a.ext === '.gltf') {
+      const loader = new THREE.GLTFLoader()
+      loader.load(`${API}/api/assets/${a.id}/file`, gltf => {
+        const model = gltf.scene
+        const box    = new THREE.Box3().setFromObject(model)
+        const center = box.getCenter(new THREE.Vector3())
+        const size   = box.getSize(new THREE.Vector3()).length()
+        model.position.sub(center)
+        _thumbCamera.position.set(size, size * 0.8, size)
+        _thumbCamera.lookAt(0, 0, 0)
+        scene.add(model)
+        _thumbRenderer.render(scene, _thumbCamera)
+        resolve(_thumbRenderer.domElement.toDataURL())
+      }, undefined, () => resolve(null))
+    } else {
+      resolve(null)
+    }
+  })
+}
+
 // ── Init ────────────────────────────────────────────────────────────────────
 async function init() {
   await checkConnection()
   await loadAssets()
   await loadWorldObjects()
+  await loadSounds()
   setInterval(checkConnection, 5000)
 }
 
@@ -426,11 +547,30 @@ document.querySelectorAll('.nav-item[data-tab]').forEach(el => {
   })
 })
 
+// ── Sync from folder ─────────────────────────────────────────────────────────
+document.getElementById('btn-sync-folder').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-sync-folder')
+  btn.textContent = 'Scanning...'
+  btn.disabled = true
+  try {
+    const r    = await fetch(`${API}/api/sync-assets`, { method: 'POST' })
+    const data = await r.json()
+    toast(data.added > 0 ? `Found ${data.added} new asset${data.added !== 1 ? 's' : ''}` : 'No new files found')
+    if (data.added > 0) await loadAssets()
+  } catch (e) {
+    toast('Sync failed: ' + e.message)
+  } finally {
+    btn.textContent = '⟳ Sync from Folder'
+    btn.disabled = false
+  }
+})
+
 // ── Assets ──────────────────────────────────────────────────────────────────
 async function loadAssets() {
   const r = await fetch(`${API}/api/assets`)
   assets = await r.json()
   renderGrid()
+  generateThumbnails()
 }
 
 function renderGrid() {
@@ -454,24 +594,34 @@ function makeCard(a) {
   const card = document.createElement('div')
   card.className = 'asset-card'
   card.dataset.id = a.id
+  card.title = 'Click to inspect'
+  card.style.cursor = 'pointer'
 
   const prev = document.createElement('div')
   prev.className = 'asset-preview'
-  prev.textContent = a.ext === '.glb' || a.ext === '.gltf' ? '⬡' : '🖼'
-  prev.style.fontSize = '32px'
-  prev.style.opacity = '0.3'
+  if (thumbnailCache.has(a.id)) {
+    const img = document.createElement('img')
+    img.src = thumbnailCache.get(a.id)
+    img.style.cssText = 'width:100%;height:100%;object-fit:contain;border-radius:4px;'
+    prev.appendChild(img)
+  } else {
+    prev.style.cssText += 'display:flex;align-items:center;justify-content:center;font-size:28px;'
+    prev.textContent = '⋯'
+    prev.style.opacity = '0.3'
+  }
 
   card.innerHTML = `
     <div class="asset-name">${esc(a.display_name)}</div>
     <div class="asset-type"><span class="badge badge-${a.type}">${a.type}</span> &nbsp;${a.ext}</div>
     <div class="asset-size">${fmtSize(a.size)}</div>
     <div class="asset-actions">
-      ${(a.ext==='.glb'||a.ext==='.gltf') ? `<span class="btn" onclick="openPreview('${a.id}')">3D</span>` : ''}
-      <span class="btn" onclick="openCodegen('${a.id}')">code</span>
-      <span class="btn danger" onclick="deleteAsset('${a.id}')">del</span>
+      <span class="btn" onclick="event.stopPropagation();downloadAsset('${a.id}',this)">⬇</span>
+      <span class="btn primary" onclick="event.stopPropagation();overwriteAsset('${a.id}')" title="Upload GLB to replace this asset">↑ GLB</span>
+      <span class="btn danger" onclick="event.stopPropagation();deleteAsset('${a.id}')">del</span>
     </div>
   `
   card.prepend(prev)
+  card.addEventListener('click', () => openAssetModal(a.id))
   return card
 }
 
@@ -480,6 +630,185 @@ async function deleteAsset(id) {
   await fetch(`${API}/api/assets/${id}`, { method: 'DELETE' })
   await loadAssets()
   toast('Asset deleted')
+}
+
+function downloadAsset(id, btnEl) {
+  const a = assets.find(x => x.id === id)
+  if (!a) return
+
+  if (a.ext === '.glb' || a.ext === '.gltf') {
+    const link = document.createElement('a')
+    link.href     = `${API}/api/assets/${id}/file`
+    link.download = a.filename
+    document.body.appendChild(link); link.click(); document.body.removeChild(link)
+    return
+  }
+
+  if (a.ext === 'procedural') {
+    if (btnEl) { btnEl.textContent = '…'; btnEl.style.opacity = '0.5' }
+    try {
+      const scene  = new THREE.Scene()
+      const camera = new THREE.PerspectiveCamera(50, 1, 0.01, 500)
+      buildProceduralPreview(a, scene, camera)
+      const glb = _buildGLB(scene)
+      if (!glb) { toast('Nothing to export for this asset', true); return }
+      _triggerDownload(glb, `${a.id}.glb`, 'model/gltf-binary')
+      toast(`Downloaded ${a.id}.glb — edit in Blender, upload with ↑ GLB`)
+    } catch (err) {
+      console.error('[export]', err)
+      toast('Export error: ' + err.message, true)
+    } finally {
+      if (btnEl) { btnEl.textContent = '⬇ Download GLB'; btnEl.style.opacity = '1' }
+    }
+  }
+}
+
+function _triggerDownload(arrayBuffer, filename, mime) {
+  const blob = new Blob([arrayBuffer], { type: mime })
+  const url  = URL.createObjectURL(blob)
+  const a    = document.createElement('a')
+  a.href = url; a.download = filename
+  document.body.appendChild(a); a.click(); document.body.removeChild(a)
+  setTimeout(() => URL.revokeObjectURL(url), 2000)
+}
+
+/**
+ * Export a THREE.Scene as a GLB binary (ArrayBuffer).
+ * Pure JS — no GLTFExporter dependency.
+ * Handles indexed and non-indexed BufferGeometry, basic PBR colours.
+ */
+function _buildGLB(scene) {
+  // ── 1. Gather mesh data ────────────────────────────────────────────────────
+  const meshItems = []
+  scene.traverse(node => {
+    if (!node.isMesh || !node.geometry?.attributes?.position) return
+    node.updateWorldMatrix(true, false)
+    const geo = node.geometry.clone()
+    geo.applyMatrix4(node.matrixWorld)
+    if (!geo.attributes.normal) geo.computeVertexNormals()
+    const c = node.material?.color ?? { r: 0.8, g: 0.8, b: 0.8 }
+    meshItems.push({
+      pos:   new Float32Array(geo.attributes.position.array),
+      norm:  new Float32Array(geo.attributes.normal.array),
+      idx:   geo.index ? geo.index.array : null,
+      color: [c.r, c.g, c.b, 1.0],
+      rough: node.material?.roughness ?? 0.8,
+      metal: node.material?.metalness ?? 0.0,
+    })
+    geo.dispose()
+  })
+  if (!meshItems.length) return null
+
+  // ── 2. Build binary buffer ─────────────────────────────────────────────────
+  const bufViews = [], accessors = [], meshDefs = [], nodeDefs = [], matDefs = []
+  const chunks = []
+  let byteOffset = 0
+
+  function addView(typedArray, target) {
+    // Copy to ensure byteOffset=0
+    const buf = new Uint8Array(typedArray.buffer, typedArray.byteOffset, typedArray.byteLength).slice().buffer
+    // Pad to 4-byte boundary
+    const pad = (4 - buf.byteLength % 4) % 4
+    const padded = pad ? new Uint8Array(buf.byteLength + pad) : new Uint8Array(buf)
+    if (pad) padded.set(new Uint8Array(buf))
+    chunks.push(padded.buffer)
+    const bvIdx = bufViews.length
+    bufViews.push({ buffer: 0, byteOffset, byteLength: buf.byteLength, target })
+    byteOffset += padded.byteLength
+    return bvIdx
+  }
+
+  for (const { pos, norm, idx, color, rough, metal } of meshItems) {
+    const attribs = {}
+
+    // Positions
+    const pmin = [Infinity,Infinity,Infinity], pmax = [-Infinity,-Infinity,-Infinity]
+    for (let i = 0; i < pos.length; i += 3) {
+      pmin[0] = Math.min(pmin[0], pos[i]);   pmax[0] = Math.max(pmax[0], pos[i])
+      pmin[1] = Math.min(pmin[1], pos[i+1]); pmax[1] = Math.max(pmax[1], pos[i+1])
+      pmin[2] = Math.min(pmin[2], pos[i+2]); pmax[2] = Math.max(pmax[2], pos[i+2])
+    }
+    attribs.POSITION = accessors.length
+    accessors.push({ bufferView: addView(pos, 34962), componentType: 5126, count: pos.length/3, type:'VEC3', min:pmin, max:pmax })
+
+    // Normals
+    attribs.NORMAL = accessors.length
+    accessors.push({ bufferView: addView(norm, 34962), componentType: 5126, count: norm.length/3, type:'VEC3' })
+
+    // Indices
+    const prim = { attributes: attribs, mode: 4 }
+    if (idx) {
+      const idxArr = pos.length/3 > 65535 ? new Uint32Array(idx) : new Uint16Array(idx)
+      prim.indices = accessors.length
+      accessors.push({ bufferView: addView(idxArr, 34963), componentType: idxArr instanceof Uint32Array ? 5125 : 5123, count: idxArr.length, type:'SCALAR' })
+    }
+
+    prim.material = matDefs.length
+    matDefs.push({ pbrMetallicRoughness: { baseColorFactor: color, metallicFactor: metal, roughnessFactor: rough } })
+
+    const meshIdx = meshDefs.length
+    meshDefs.push({ primitives: [prim] })
+    nodeDefs.push({ mesh: meshIdx })
+  }
+
+  // ── 3. Concatenate binary buffer ───────────────────────────────────────────
+  const totalBin = byteOffset
+  const bin = new Uint8Array(totalBin)
+  let off = 0
+  for (const c of chunks) { bin.set(new Uint8Array(c), off); off += c.byteLength }
+
+  // ── 4. Build GLTF JSON ─────────────────────────────────────────────────────
+  const gltf = {
+    asset: { version:'2.0', generator:'Verdant Protocol Asset Studio' },
+    scene: 0,
+    scenes: [{ nodes: nodeDefs.map((_,i)=>i) }],
+    nodes: nodeDefs, meshes: meshDefs, materials: matDefs,
+    accessors, bufferViews: bufViews,
+    buffers: [{ byteLength: totalBin }],
+  }
+  const jsonStr  = JSON.stringify(gltf)
+  const jsonPad  = (4 - jsonStr.length % 4) % 4
+  const jsonBytes = new TextEncoder().encode(jsonStr + ' '.repeat(jsonPad))
+
+  // ── 5. Pack GLB ────────────────────────────────────────────────────────────
+  const totalLen = 12 + 8 + jsonBytes.length + (totalBin > 0 ? 8 + totalBin : 0)
+  const glb  = new ArrayBuffer(totalLen)
+  const view = new DataView(glb)
+  let p = 0
+  const w32 = (v, le=true) => { view.setUint32(p, v, le); p += 4 }
+  w32(0x46546C67)        // magic "glTF"
+  w32(2)                 // version
+  w32(totalLen)          // total length
+  w32(jsonBytes.length)  // JSON chunk length
+  w32(0x4E4F534A)        // chunk type JSON
+  new Uint8Array(glb, p).set(jsonBytes); p += jsonBytes.length
+  if (totalBin > 0) {
+    w32(totalBin)        // BIN chunk length
+    w32(0x004E4942)      // chunk type BIN
+    new Uint8Array(glb, p).set(bin); p += totalBin
+  }
+  return glb
+}
+
+function overwriteAsset(id) {
+  const a = assets.find(x => x.id === id)
+  if (!a) return
+  const input = document.createElement('input')
+  input.type   = 'file'
+  input.accept = '.glb,.gltf'
+  input.addEventListener('change', async () => {
+    const file = input.files[0]
+    if (!file) return
+    const fd = new FormData()
+    fd.append('file', file)
+    const r = await fetch(`${API}/api/assets/${id}/overwrite`, { method: 'POST', body: fd })
+    if (!r.ok) { toast('Overwrite failed: ' + (await r.text()), true); return }
+    const updated = await r.json()
+    toast(`${a.display_name} replaced with ${file.name}`)
+    thumbnailCache.delete(id)
+    await loadAssets()
+  })
+  input.click()
 }
 
 // ── Upload ───────────────────────────────────────────────────────────────────
@@ -511,76 +840,547 @@ async function uploadFiles(files) {
   await loadAssets()
 }
 
-// ── 3D Preview ───────────────────────────────────────────────────────────────
-function openPreview(id) {
+// ── Asset Detail Modal ────────────────────────────────────────────────────────
+let _modalAssetId = null
+
+function openAssetModal(id) {
   const a = assets.find(x => x.id === id)
   if (!a) return
+  _modalAssetId = id
+
+  // Header
   document.getElementById('preview-title').textContent = a.display_name
+
+  // Meta row
+  document.getElementById('pmeta-type').textContent    = a.type
+  document.getElementById('pmeta-ext').textContent     = a.ext
+  document.getElementById('pmeta-size').textContent    = fmtSize(a.size)
+  document.getElementById('pmeta-glbpath').textContent = a.glb_path || '—'
+
+  // Rename fields
+  document.getElementById('preview-name-input').value  = a.display_name
+  document.getElementById('preview-type-select').value = a.type
+
   document.getElementById('preview-modal').classList.add('open')
   initPreviewScene(id)
 }
 
+// Keep old name as alias so any remaining "3D" button calls still work
+function openPreview(id) { openAssetModal(id) }
+
 function closePreview() {
   document.getElementById('preview-modal').classList.remove('open')
   if (previewAF) { cancelAnimationFrame(previewAF); previewAF = null }
+  if (previewControls) { previewControls.dispose(); previewControls = null }
   if (previewRenderer) { previewRenderer.dispose(); previewRenderer = null }
-  document.getElementById('preview-canvas-wrap').innerHTML = ''
+  const wrap = document.getElementById('preview-canvas-wrap')
+  for (const child of [...wrap.children]) {
+    if (child.tagName === 'CANVAS') child.remove()
+  }
+}
+
+async function saveAssetDetails() {
+  if (!_modalAssetId) return
+  const name = document.getElementById('preview-name-input').value.trim()
+  const type = document.getElementById('preview-type-select').value
+  if (!name) { toast('Name cannot be empty', true); return }
+
+  const btn = document.getElementById('preview-save-btn')
+  btn.textContent = 'Saving…'
+  btn.style.opacity = '0.6'
+  try {
+    const r = await fetch(`${API}/api/assets/${_modalAssetId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ display_name: name, type }),
+    })
+    if (!r.ok) throw new Error(await r.text())
+    // Update local state
+    const a = assets.find(x => x.id === _modalAssetId)
+    if (a) { a.display_name = name; a.type = type }
+    document.getElementById('preview-title').textContent = name
+    document.getElementById('pmeta-type').textContent    = type
+    renderGrid()
+    toast(`Saved — ${name}`)
+  } catch (e) {
+    toast('Save failed: ' + e.message, true)
+  } finally {
+    btn.textContent = 'Save'
+    btn.style.opacity = '1'
+  }
 }
 
 function initPreviewScene(id) {
-  const wrap = document.getElementById('preview-canvas-wrap')
-  wrap.innerHTML = ''
-  const w = wrap.clientWidth || 520, h = 360
+  // Let the browser apply display:flex before we measure / build
+  setTimeout(() => _buildPreviewScene(id), 0)
+}
 
-  previewScene    = new THREE.Scene()
-  previewScene.background = new THREE.Color(0x020802)
+function _buildPreviewScene(id) {
+  try {
+    const a    = assets.find(x => x.id === id)
+    const wrap = document.getElementById('preview-canvas-wrap')
+    // Remove any previous canvas
+    for (const child of [...wrap.children]) { if (child.tagName === 'CANVAS') child.remove() }
 
-  const camera = new THREE.PerspectiveCamera(50, w / h, 0.01, 200)
-  camera.position.set(3, 2, 3)
+    const W = 660, H = 380   // match #preview-canvas-wrap exactly
 
-  previewRenderer = new THREE.WebGLRenderer({ antialias: true })
-  previewRenderer.setSize(w, h)
-  previewRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-  previewRenderer.outputEncoding = THREE.sRGBEncoding
-  previewRenderer.toneMapping    = THREE.ACESFilmicToneMapping
-  wrap.appendChild(previewRenderer.domElement)
+    previewScene = new THREE.Scene()
+    previewScene.background = new THREE.Color(0x606060)
 
-  previewControls = new THREE.OrbitControls(camera, previewRenderer.domElement)
-  previewControls.enableDamping = true
+    const camera = new THREE.PerspectiveCamera(50, W / H, 0.01, 500)
+    camera.position.set(4, 3, 4)
+    camera.lookAt(0, 0, 0)
 
-  // Lights
-  previewScene.add(new THREE.AmbientLight(0xffffff, 0.6))
-  const dir = new THREE.DirectionalLight(0xffffff, 1.2)
-  dir.position.set(5, 8, 5)
-  previewScene.add(dir)
+    previewRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: false })
+    previewRenderer.setSize(W, H, false)   // false = don't touch canvas CSS style
+    previewRenderer.setPixelRatio(1)
+    previewRenderer.toneMapping = THREE.ACESFilmicToneMapping
+    previewRenderer.toneMappingExposure = 1.2
+    previewRenderer.domElement.style.width  = W + 'px'
+    previewRenderer.domElement.style.height = H + 'px'
+    wrap.appendChild(previewRenderer.domElement)
 
-  // Grid
-  previewScene.add(new THREE.GridHelper(10, 10, 0x1a2e1a, 0x1a2e1a))
+  previewControls = _makeOrbit(camera, previewRenderer.domElement)
 
-  // Load GLB
-  const loader = new THREE.GLTFLoader()
-  loader.load(`${API}/api/assets/${id}/file`, gltf => {
-    const model = gltf.scene
-    // Auto-center
-    const box = new THREE.Box3().setFromObject(model)
-    const center = box.getCenter(new THREE.Vector3())
-    const size   = box.getSize(new THREE.Vector3()).length()
-    model.position.sub(center)
-    camera.position.set(size, size * 0.8, size)
-    previewControls.update()
-    previewScene.add(model)
-  }, undefined, err => console.error('GLB load error', err))
+  // Neutral white lighting so model colours read correctly
+  previewScene.add(new THREE.AmbientLight(0xffffff, 1.0))
+  const key = new THREE.DirectionalLight(0xfff8f0, 1.6)
+  key.position.set(5, 8, 5)
+  previewScene.add(key)
+  const fill = new THREE.DirectionalLight(0xdde8ff, 0.7)
+  fill.position.set(-4, 3, -3)
+  previewScene.add(fill)
+
+  // Grid — darker lines on medium grey
+  previewScene.add(new THREE.GridHelper(12, 12, 0x888888, 0x777777))
+
+  if (a?.ext === 'procedural') {
+    buildProceduralPreview(a, previewScene, camera)
+  } else if (a?.ext === '.glb' || a?.ext === '.gltf') {
+    const loader = new THREE.GLTFLoader()
+    loader.load(`${API}/api/assets/${id}/file`, gltf => {
+      const model  = gltf.scene
+      const box    = new THREE.Box3().setFromObject(model)
+      const center = box.getCenter(new THREE.Vector3())
+      const size   = box.getSize(new THREE.Vector3()).length()
+      model.position.sub(center)
+      const dist = Math.max(size * 1.2, 1.5)
+      camera.position.set(dist, dist * 0.7, dist)
+      camera.lookAt(0, 0, 0)
+      previewControls.update()
+      previewScene.add(model)
+    }, undefined, err => console.error('[AssetModal] GLB load error', err))
+  }
 
   const animate = () => {
     previewAF = requestAnimationFrame(animate)
-    previewControls.update()
     previewRenderer.render(previewScene, camera)
   }
   animate()
+
+  } catch(err) {
+    console.error('[AssetModal] preview build failed:', err)
+    const wrap = document.getElementById('preview-canvas-wrap')
+    wrap.innerHTML = `<div style="color:#ef9a9a;padding:24px;font-size:12px">Preview error: ${err.message}</div><div id="preview-hint">drag to rotate · scroll to zoom</div>`
+  }
+}
+
+// ── Orbit controller (no OrbitControls dependency) ───────────────────────────
+function _makeOrbit(camera, el) {
+  const target = new THREE.Vector3(0, 0, 0)
+  let phi    = Math.acos(Math.max(-1, Math.min(1, camera.position.y / camera.position.length())))
+  let theta  = Math.atan2(camera.position.x, camera.position.z)
+  let radius = camera.position.length()
+
+  let down = false, rmb = false
+  let lx = 0, ly = 0
+
+  function sync() {
+    camera.position.set(
+      target.x + radius * Math.sin(phi) * Math.sin(theta),
+      target.y + radius * Math.cos(phi),
+      target.z + radius * Math.sin(phi) * Math.cos(theta)
+    )
+    camera.lookAt(target)
+  }
+  sync()
+
+  function onDown(e) {
+    if (e.button === 2) rmb = true; else down = true
+    lx = e.clientX; ly = e.clientY
+    e.preventDefault()
+  }
+  function onUp(e) { if (e.button === 2) rmb = false; else down = false }
+  function onMove(e) {
+    const dx = e.clientX - lx, dy = e.clientY - ly
+    lx = e.clientX; ly = e.clientY
+    if (down) {
+      theta -= dx * 0.008
+      phi = Math.max(0.05, Math.min(Math.PI - 0.05, phi + dy * 0.008))
+      sync()
+    } else if (rmb) {
+      const scale = radius * 0.001
+      const right = new THREE.Vector3().crossVectors(
+        new THREE.Vector3(0,1,0),
+        new THREE.Vector3().subVectors(camera.position, target).normalize()
+      ).normalize()
+      target.addScaledVector(right, dx * scale)
+      target.y -= dy * scale
+      sync()
+    }
+  }
+  function onWheel(e) {
+    radius = Math.max(0.3, Math.min(80, radius * (1 + e.deltaY * 0.001)))
+    sync()
+    e.preventDefault()
+  }
+
+  el.addEventListener('mousedown',   onDown,  { passive: false })
+  el.addEventListener('contextmenu', e => e.preventDefault())
+  window.addEventListener('mouseup',   onUp)
+  window.addEventListener('mousemove', onMove)
+  el.addEventListener('wheel', onWheel, { passive: false })
+
+  return {
+    dispose() {
+      el.removeEventListener('mousedown',   onDown)
+      el.removeEventListener('contextmenu', e => e.preventDefault())
+      window.removeEventListener('mouseup',   onUp)
+      window.removeEventListener('mousemove', onMove)
+      el.removeEventListener('wheel', onWheel)
+    }
+  }
+}
+
+// ── Procedural previews — mirrors Three.js geometry from the game ─────────────
+function buildProceduralPreview(a, scene, camera) {
+  const id = a.id
+  let mesh
+
+  // ── Trees ───────────────────────────────────────────────────────────────────
+  const TREES = {
+    tree_normal:   { canopy: 0x1b4d1b, trunk: 0x5c3d2e, scale: 1.0 },
+    tree_mossOak:  { canopy: 0x0d4a1e, trunk: 0x3d2b1f, scale: 1.25 },
+    tree_ironwood: { canopy: 0x1a3010, trunk: 0x2a1f15, scale: 1.5 },
+    tree_ancient:  { canopy: 0x2d1b45, trunk: 0x1e1208, scale: 1.9 },
+  }
+  if (TREES[id]) {
+    const t      = TREES[id]
+    const grp    = new THREE.Group()
+    const trunkH = 1.8 * t.scale
+    const trunk  = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.12 * t.scale, 0.18 * t.scale, trunkH, 6),
+      new THREE.MeshStandardMaterial({ color: t.trunk, roughness: 1.0 })
+    )
+    trunk.position.y = 0.9 * t.scale
+    const canopy = new THREE.Mesh(
+      new THREE.ConeGeometry(1.0 * t.scale, 2.2 * t.scale, 6),
+      new THREE.MeshStandardMaterial({ color: t.canopy, roughness: 0.9 })
+    )
+    canopy.position.y = (0.9 + 1.5) * t.scale
+    grp.add(trunk, canopy)
+    scene.add(grp)
+    camera.position.set(4 * t.scale, 3 * t.scale, 4 * t.scale)
+    camera.lookAt(0, 1.5 * t.scale, 0)
+    return
+  }
+
+  // ── Ore nodes ────────────────────────────────────────────────────────────────
+  const ORES = {
+    ore_copper:     { rock: 0x7a6952, vein: 0xb87333 },
+    ore_iron:       { rock: 0x5a5a5a, vein: 0x78909c },
+    ore_coal:       { rock: 0x3a3a3a, vein: 0x212121 },
+    ore_solarite:   { rock: 0x4a3f10, vein: 0xffd740 },
+    ore_heartstone: { rock: 0x2a1a2a, vein: 0xce93d8 },
+  }
+  if (ORES[id]) {
+    const o   = ORES[id]
+    const grp = new THREE.Group()
+    const rockMat = new THREE.MeshStandardMaterial({ color: o.rock, roughness: 0.95 })
+    const veinMat = new THREE.MeshStandardMaterial({ color: o.vein, roughness: 0.5, metalness: 0.3 })
+    const positions = [[0,0,0],[0.5,0.1,0.3],[-0.4,0,0.2],[0.1,0,-0.4]]
+    const scales    = [1.0, 0.7, 0.65, 0.55]
+    positions.forEach((p, i) => {
+      const r = new THREE.Mesh(new THREE.DodecahedronGeometry(0.5 * scales[i], 0), rockMat)
+      r.position.set(...p)
+      r.rotation.set(Math.random(), Math.random(), Math.random())
+      grp.add(r)
+    })
+    // Vein streaks
+    for (let i = 0; i < 4; i++) {
+      const v = new THREE.Mesh(
+        new THREE.BoxGeometry(0.06, 0.06, 0.4 + Math.random() * 0.3),
+        veinMat
+      )
+      v.position.set((Math.random()-0.5)*0.6, 0.2+Math.random()*0.3, (Math.random()-0.5)*0.6)
+      v.rotation.set(Math.random()*0.5, Math.random()*Math.PI, Math.random()*0.5)
+      grp.add(v)
+    }
+    scene.add(grp)
+    camera.position.set(2.5, 2, 2.5)
+    camera.lookAt(0, 0.3, 0)
+    return
+  }
+
+  // ── Gather nodes ──────────────────────────────────────────────────────────────
+  if (id === 'gather_herb') {
+    const grp = new THREE.Group()
+    const mat = new THREE.MeshStandardMaterial({ color: 0x7cb342, roughness: 0.8 })
+    for (let i = 0; i < 7; i++) {
+      const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.03, 0.3 + Math.random()*0.2, 5), mat)
+      stem.position.set((Math.random()-0.5)*0.8, 0.15, (Math.random()-0.5)*0.8)
+      stem.rotation.z = (Math.random()-0.5)*0.3
+      const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.1 + Math.random()*0.06, 5, 4), mat)
+      leaf.position.copy(stem.position).y += 0.22
+      grp.add(stem, leaf)
+    }
+    scene.add(grp)
+    camera.position.set(1.5, 1.5, 1.5)
+    camera.lookAt(0, 0.2, 0)
+    return
+  }
+  if (id === 'gather_fungi') {
+    const grp = new THREE.Group()
+    const capMat  = new THREE.MeshStandardMaterial({ color: 0x00e5cc, roughness: 0.5, emissive: 0x00c4aa, emissiveIntensity: 0.4 })
+    const stemMat = new THREE.MeshStandardMaterial({ color: 0xb2dfdb, roughness: 0.8 })
+    for (let i = 0; i < 5; i++) {
+      const h = 0.15 + Math.random()*0.2
+      const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, h, 6), stemMat)
+      stem.position.set((Math.random()-0.5)*0.6, h/2, (Math.random()-0.5)*0.6)
+      const cap = new THREE.Mesh(new THREE.SphereGeometry(0.12+Math.random()*0.06, 7, 5), capMat)
+      cap.position.copy(stem.position)
+      cap.position.y += h/2 + 0.05
+      cap.scale.y = 0.5
+      grp.add(stem, cap)
+    }
+    scene.add(grp)
+    camera.position.set(1.5, 1.5, 1.5)
+    camera.lookAt(0, 0.15, 0)
+    return
+  }
+
+  // ── Forest Drone ──────────────────────────────────────────────────────────────
+  if (id === 'forestDrone') {
+    const grp     = new THREE.Group()
+    const bodyMat   = new THREE.MeshStandardMaterial({ color: 0x263238, roughness: 0.4, metalness: 0.7 })
+    const sensorMat = new THREE.MeshStandardMaterial({ color: 0x00e676, emissive: 0x00c853, emissiveIntensity: 1.5 })
+    const armMat    = new THREE.MeshStandardMaterial({ color: 0x37474f, roughness: 0.6, metalness: 0.5 })
+    const body   = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.28, 0.22, 8), bodyMat)
+    const sensor = new THREE.Mesh(new THREE.SphereGeometry(0.13, 8, 6), sensorMat)
+    sensor.position.y = -0.14
+    grp.add(body, sensor)
+    for (let i = 0; i < 4; i++) {
+      const angle = (i / 4) * Math.PI * 2
+      const arm   = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.04, 0.06), armMat)
+      arm.position.set(Math.cos(angle) * 0.3, 0, Math.sin(angle) * 0.3)
+      arm.rotation.y = angle
+      const rotor = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.02, 8), bodyMat)
+      rotor.position.set(Math.cos(angle) * 0.55, 0.04, Math.sin(angle) * 0.55)
+      grp.add(arm, rotor)
+    }
+    grp.position.y = 0.5
+    scene.add(grp)
+    camera.position.set(2.2, 1.8, 2.2)
+    camera.lookAt(0, 0.5, 0)
+    return
+  }
+
+  // ── Player ────────────────────────────────────────────────────────────────────
+  if (id === 'player') {
+    const grp    = new THREE.Group()
+    const body   = new THREE.Mesh(
+      new THREE.CapsuleGeometry(0.35, 1.0, 4, 8),
+      new THREE.MeshStandardMaterial({ color: 0x4caf50, roughness: 0.8, metalness: 0.1 })
+    )
+    body.position.y = 0.85
+    const nose   = new THREE.Mesh(
+      new THREE.ConeGeometry(0.15, 0.4, 6),
+      new THREE.MeshStandardMaterial({ color: 0x76ff03 })
+    )
+    nose.rotation.x = Math.PI / 2
+    nose.position.set(0, 1.1, -0.5)
+    grp.add(body, nose)
+    scene.add(grp)
+    camera.position.set(2.2, 2.0, 2.2)
+    camera.lookAt(0, 0.85, 0)
+    return
+  }
+
+  // ── Stations ──────────────────────────────────────────────────────────────────
+  if (id === 'foundryStation') {
+    const grp    = new THREE.Group()
+    const stoneMat = new THREE.MeshStandardMaterial({ color: 0x5d4037, roughness: 0.95 })
+    const metalMat = new THREE.MeshStandardMaterial({ color: 0x37474f, roughness: 0.4, metalness: 0.7 })
+    const fireMat  = new THREE.MeshStandardMaterial({ color: 0xff6f00, emissive: 0xff3d00, emissiveIntensity: 1.5 })
+    const base = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.5, 0.9), stoneMat)
+    base.position.y = 0.25
+    const chimney = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.2, 0.8, 6), metalMat)
+    chimney.position.set(0.35, 0.9, 0)
+    const fire = new THREE.Mesh(new THREE.SphereGeometry(0.18, 6, 5), fireMat)
+    fire.position.set(0, 0.55, 0)
+    fire.scale.y = 0.6
+    grp.add(base, chimney, fire)
+    scene.add(grp)
+    camera.position.set(2.5, 2, 2.5)
+    camera.lookAt(0, 0.5, 0)
+    return
+  }
+
+  if (id === 'chemBench') {
+    const grp    = new THREE.Group()
+    const woodMat  = new THREE.MeshStandardMaterial({ color: 0x5d4037, roughness: 0.95 })
+    const glassMat = new THREE.MeshStandardMaterial({ color: 0x80deea, roughness: 0.1, transparent: true, opacity: 0.7 })
+    const tubeMat  = new THREE.MeshStandardMaterial({ color: 0xb0bec5, roughness: 0.4, metalness: 0.5 })
+    const bench = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.08, 0.7), woodMat)
+    bench.position.y = 0.8
+    const leg1 = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.8, 0.07), woodMat)
+    leg1.position.set(-0.55, 0.4, -0.28)
+    const leg2 = leg1.clone(); leg2.position.set(0.55, 0.4, -0.28)
+    const leg3 = leg1.clone(); leg3.position.set(-0.55, 0.4, 0.28)
+    const leg4 = leg1.clone(); leg4.position.set(0.55, 0.4, 0.28)
+    const flask1 = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 0.25, 8), glassMat)
+    flask1.position.set(-0.3, 0.97, 0)
+    const flask2 = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 6), glassMat)
+    flask2.position.set(0.1, 0.96, 0.1)
+    const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.4, 5), tubeMat)
+    tube.rotation.z = Math.PI / 4
+    tube.position.set(-0.1, 1.05, 0)
+    grp.add(bench, leg1, leg2, leg3, leg4, flask1, flask2, tube)
+    scene.add(grp)
+    camera.position.set(2.5, 2, 2.5)
+    camera.lookAt(0, 0.85, 0)
+    return
+  }
+
+  if (id === 'techBench') {
+    const grp    = new THREE.Group()
+    const metalMat = new THREE.MeshStandardMaterial({ color: 0x455a64, roughness: 0.3, metalness: 0.8 })
+    const screenMat = new THREE.MeshStandardMaterial({ color: 0x00bcd4, emissive: 0x006064, emissiveIntensity: 1.2 })
+    const bench = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.06, 0.7), metalMat)
+    bench.position.y = 0.85
+    const leg1 = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.85, 0.06), metalMat)
+    leg1.position.set(-0.6, 0.42, -0.3)
+    const leg2 = leg1.clone(); leg2.position.set(0.6, 0.42, -0.3)
+    const leg3 = leg1.clone(); leg3.position.set(-0.6, 0.42, 0.3)
+    const leg4 = leg1.clone(); leg4.position.set(0.6, 0.42, 0.3)
+    const screen = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.45, 0.03), screenMat)
+    screen.position.set(-0.2, 1.18, -0.2)
+    screen.rotation.x = -0.3
+    const panel = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.25, 0.03), metalMat)
+    panel.position.set(0.4, 1.0, -0.3)
+    panel.rotation.x = -0.2
+    grp.add(bench, leg1, leg2, leg3, leg4, screen, panel)
+    scene.add(grp)
+    camera.position.set(2.8, 2.2, 2.8)
+    camera.lookAt(0, 0.85, 0)
+    return
+  }
+
+  // ── Buildable structures ──────────────────────────────────────────────────────
+  const BUILDABLES = {
+    build_campfire:   () => {
+      const g = new THREE.Group()
+      const logMat  = new THREE.MeshStandardMaterial({ color: 0x5d4037, roughness: 0.9 })
+      const fireMat = new THREE.MeshStandardMaterial({ color: 0xff6f00, emissive: 0xff3d00, emissiveIntensity: 1.8 })
+      for (let i = 0; i < 5; i++) {
+        const a = (i/5)*Math.PI*2
+        const log = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 0.7, 5), logMat)
+        log.position.set(Math.cos(a)*0.2, 0.1, Math.sin(a)*0.2)
+        log.rotation.z = Math.PI/2.5; log.rotation.y = a
+        g.add(log)
+      }
+      const flame = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.4, 6), fireMat)
+      flame.position.y = 0.3
+      g.add(flame)
+      return [g, 2]
+    },
+    build_leanTo: () => {
+      const g = new THREE.Group()
+      const woodMat = new THREE.MeshStandardMaterial({ color: 0x5d4037, roughness: 0.95 })
+      const mossMat = new THREE.MeshStandardMaterial({ color: 0x388e3c, roughness: 1.0 })
+      const post1 = new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.07,1.5,6), woodMat)
+      post1.position.set(-0.7,0.75,0)
+      const post2 = post1.clone(); post2.position.set(0.7,0.75,0)
+      const roof = new THREE.Mesh(new THREE.BoxGeometry(1.6,0.08,1.2), mossMat)
+      roof.position.set(0,1.42,0.2); roof.rotation.x = -0.3
+      g.add(post1,post2,roof)
+      return [g, 2.5]
+    },
+    build_watchtower: () => {
+      const g = new THREE.Group()
+      const woodMat = new THREE.MeshStandardMaterial({ color: 0x4e342e, roughness: 0.9 })
+      const platform = new THREE.Mesh(new THREE.BoxGeometry(1.2,0.1,1.2), woodMat)
+      platform.position.y = 2.0
+      for (let i = 0; i < 4; i++) {
+        const cx = i<2?-0.5:0.5, cz = i%2===0?-0.5:0.5
+        const col = new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.1,2.0,6), woodMat)
+        col.position.set(cx,1.0,cz)
+        g.add(col)
+      }
+      g.add(platform)
+      return [g, 3.5]
+    },
+    build_solarRelay: () => {
+      const g = new THREE.Group()
+      const metalMat  = new THREE.MeshStandardMaterial({ color: 0x546e7a, roughness:0.3, metalness:0.8 })
+      const panelMat  = new THREE.MeshStandardMaterial({ color: 0x1a237e, roughness:0.2, metalness:0.5, emissive:0x1565c0, emissiveIntensity:0.4 })
+      const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.07,0.09,2.5,8), metalMat)
+      pole.position.y = 1.25
+      const panel1 = new THREE.Mesh(new THREE.BoxGeometry(0.9,0.6,0.04), panelMat)
+      panel1.position.set(-0.55,2.3,0); panel1.rotation.y = 0.2
+      const panel2 = panel1.clone(); panel2.position.set(0.55,2.3,0); panel2.rotation.y=-0.2
+      g.add(pole,panel1,panel2)
+      return [g, 3.5]
+    },
+    build_rootNexus: () => {
+      const g = new THREE.Group()
+      const rootMat  = new THREE.MeshStandardMaterial({ color: 0x2e1503, roughness:1.0 })
+      const crystMat = new THREE.MeshStandardMaterial({ color: 0xce93d8, roughness:0.2, metalness:0.3, emissive:0x7b1fa2, emissiveIntensity:0.6 })
+      for (let i = 0; i < 6; i++) {
+        const a = (i/6)*Math.PI*2
+        const root = new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.09,0.6,5), rootMat)
+        root.position.set(Math.cos(a)*0.6,0.1,Math.sin(a)*0.6)
+        root.rotation.z = 0.4; root.rotation.y = a
+        g.add(root)
+      }
+      const cryst = new THREE.Mesh(new THREE.OctahedronGeometry(0.35,0), crystMat)
+      cryst.position.y = 0.55
+      g.add(cryst)
+      return [g, 2.5]
+    },
+    build_barricade: () => {
+      const g = new THREE.Group()
+      const mat = new THREE.MeshStandardMaterial({ color: 0x4e342e, roughness:0.9 })
+      for (let i = -1; i <= 1; i++) {
+        const post = new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.1,1.1,6), mat)
+        post.position.set(i*0.45,0.55,0)
+        g.add(post)
+      }
+      const rail = new THREE.Mesh(new THREE.BoxGeometry(1.2,0.1,0.08), mat)
+      rail.position.y = 0.9
+      g.add(rail)
+      return [g, 2.5]
+    },
+  }
+  if (BUILDABLES[id]) {
+    const [grp, camDist] = BUILDABLES[id]()
+    scene.add(grp)
+    camera.position.set(camDist, camDist*0.9, camDist)
+    return
+  }
+
+  // Fallback — generic box
+  scene.add(new THREE.Mesh(new THREE.BoxGeometry(1,1,1), new THREE.MeshStandardMaterial({ color: 0x4caf50 })))
 }
 
 document.getElementById('preview-modal').addEventListener('click', e => {
   if (e.target === document.getElementById('preview-modal')) closePreview()
+})
+document.getElementById('preview-name-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') saveAssetDetails()
+})
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('preview-modal').classList.contains('open')) closePreview()
 })
 
 // ── Codegen ──────────────────────────────────────────────────────────────────
@@ -680,7 +1480,8 @@ async function saveAnimations() {
 // ── World ─────────────────────────────────────────────────────────────────────
 async function loadWorldObjects() {
   const r = await fetch(`${API}/api/world`)
-  worldObjects = await r.json()
+  const data = await r.json()
+  worldObjects = Array.isArray(data) ? data : Object.values(data)
   renderWorldTable()
 }
 
@@ -843,13 +1644,6 @@ async function exportSoundManifest() {
   const a    = document.createElement('a'); a.href=url; a.download='SoundManifest.js'; a.click()
   URL.revokeObjectURL(url)
   toast('Manifest exported')
-}
-
-// Hook sounds loading into init
-const _origInit = init
-async function init() {
-  await _origInit()
-  await loadSounds()
 }
 
 init()

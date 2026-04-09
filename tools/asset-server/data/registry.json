@@ -1,1 +1,571 @@
-{}
+{
+  "player": {
+    "id": "player",
+    "filename": "procedural",
+    "original_name": "Player Character",
+    "display_name": "Player Character",
+    "type": "player",
+    "category": "player",
+    "path": null,
+    "game_path": "procedural://player",
+    "source_file": "src/player/Player.js",
+    "size": 0,
+    "ext": "procedural",
+    "tags": [
+      "player",
+      "character"
+    ],
+    "description": "The local player entity. Stats, inventory, and movement managed by Player.js.",
+    "source": "procedural",
+    "created_at": "2026-04-08T22:01:33.815994",
+    "glb_path": "/assets/models/player/player.glb"
+  },
+  "forestDrone": {
+    "id": "forestDrone",
+    "filename": "procedural",
+    "original_name": "Forest Drone",
+    "display_name": "Forest Drone",
+    "type": "enemy",
+    "category": "enemies",
+    "path": null,
+    "game_path": "procedural://enemies/forestDrone",
+    "source_file": "src/enemies/DroneEnemy.js",
+    "size": 0,
+    "ext": "procedural",
+    "tags": [
+      "enemy",
+      "drone",
+      "biomech"
+    ],
+    "description": "Aerial patrol drone. Passive until attacked. Combat level 14. Built from Three.js geometry in DroneMesh.js.",
+    "source": "procedural",
+    "created_at": "2026-04-08T22:01:33.816743",
+    "glb_path": "/assets/models/enemies/drone.glb",
+    "stats": {
+      "hp": 50,
+      "maxHp": 50,
+      "attack": 18,
+      "defense": 10,
+      "combatLevel": 14,
+      "combatStyle": "biomech"
+    }
+  },
+  "tree_normal": {
+    "id": "tree_normal",
+    "filename": "procedural",
+    "original_name": "Tree",
+    "display_name": "Tree",
+    "type": "world",
+    "category": "world/trees",
+    "path": null,
+    "game_path": "procedural://world/trees/normal",
+    "source_file": "src/world/Tree.js",
+    "size": 0,
+    "ext": "procedural",
+    "tags": [
+      "tree",
+      "woodcutting",
+      "level1"
+    ],
+    "description": "Standard tree. Yields normal logs. Level 1 Woodcutting. 25 XP.",
+    "source": "procedural",
+    "created_at": "2026-04-08T22:01:33.816750",
+    "glb_path": "/assets/models/trees/normal.glb",
+    "skill": "woodcutting",
+    "level_req": 1,
+    "xp": 25,
+    "drops": [
+      "normalLog"
+    ]
+  },
+  "tree_mossOak": {
+    "id": "tree_mossOak",
+    "filename": "procedural",
+    "original_name": "Moss Oak",
+    "display_name": "Moss Oak",
+    "type": "world",
+    "category": "world/trees",
+    "path": null,
+    "game_path": "procedural://world/trees/mossOak",
+    "source_file": "src/world/Tree.js",
+    "size": 0,
+    "ext": "procedural",
+    "tags": [
+      "tree",
+      "woodcutting",
+      "level15"
+    ],
+    "description": "Moss-draped oak. Yields moss logs. Level 15 Woodcutting. 37 XP.",
+    "source": "procedural",
+    "created_at": "2026-04-08T22:01:33.816755",
+    "glb_path": "/assets/models/trees/mossOak.glb",
+    "skill": "woodcutting",
+    "level_req": 15,
+    "xp": 37,
+    "drops": [
+      "mossLog"
+    ]
+  },
+  "tree_ironwood": {
+    "id": "tree_ironwood",
+    "filename": "procedural",
+    "original_name": "Ironwood",
+    "display_name": "Ironwood",
+    "type": "world",
+    "category": "world/trees",
+    "path": null,
+    "game_path": "procedural://world/trees/ironwood",
+    "source_file": "src/world/Tree.js",
+    "size": 0,
+    "ext": "procedural",
+    "tags": [
+      "tree",
+      "woodcutting",
+      "level30"
+    ],
+    "description": "Dense ironwood. Yields iron logs. Level 30 Woodcutting. 50 XP.",
+    "source": "procedural",
+    "created_at": "2026-04-08T22:01:33.816759",
+    "glb_path": "/assets/models/trees/ironwood.glb",
+    "skill": "woodcutting",
+    "level_req": 30,
+    "xp": 50,
+    "drops": [
+      "ironLog"
+    ]
+  },
+  "tree_ancient": {
+    "id": "tree_ancient",
+    "filename": "procedural",
+    "original_name": "Ancient Canopy",
+    "display_name": "Ancient Canopy",
+    "type": "world",
+    "category": "world/trees",
+    "path": null,
+    "game_path": "procedural://world/trees/ancient",
+    "source_file": "src/world/Tree.js",
+    "size": 0,
+    "ext": "procedural",
+    "tags": [
+      "tree",
+      "woodcutting",
+      "level60",
+      "rare"
+    ],
+    "description": "Ancient canopy tree. Yields ancient logs. Level 60 Woodcutting. 80 XP.",
+    "source": "procedural",
+    "created_at": "2026-04-08T22:01:33.816762",
+    "glb_path": "/assets/models/trees/ancient.glb",
+    "skill": "woodcutting",
+    "level_req": 60,
+    "xp": 80,
+    "drops": [
+      "ancientLog"
+    ]
+  },
+  "ore_copper": {
+    "id": "ore_copper",
+    "filename": "procedural",
+    "original_name": "Copper Vein",
+    "display_name": "Copper Vein",
+    "type": "world",
+    "category": "world/ore",
+    "path": null,
+    "game_path": "procedural://world/ore/copper",
+    "source_file": "src/world/OreNode.js",
+    "size": 0,
+    "ext": "procedural",
+    "tags": [
+      "ore",
+      "mining",
+      "level1"
+    ],
+    "description": "Copper vein. Yields copper ore. Level 1 Mining. 17.5 XP.",
+    "source": "procedural",
+    "created_at": "2026-04-08T22:01:33.816765",
+    "glb_path": "/assets/models/ore/copper.glb",
+    "skill": "mining",
+    "level_req": 1,
+    "xp": 17.5,
+    "drops": [
+      "copperOre"
+    ]
+  },
+  "ore_iron": {
+    "id": "ore_iron",
+    "filename": "procedural",
+    "original_name": "Iron Seam",
+    "display_name": "Iron Seam",
+    "type": "world",
+    "category": "world/ore",
+    "path": null,
+    "game_path": "procedural://world/ore/iron",
+    "source_file": "src/world/OreNode.js",
+    "size": 0,
+    "ext": "procedural",
+    "tags": [
+      "ore",
+      "mining",
+      "level15"
+    ],
+    "description": "Iron seam. Yields iron ore. Level 15 Mining. 35 XP.",
+    "source": "procedural",
+    "created_at": "2026-04-08T22:01:33.816771",
+    "glb_path": "/assets/models/ore/iron.glb",
+    "skill": "mining",
+    "level_req": 15,
+    "xp": 35,
+    "drops": [
+      "ironOre"
+    ]
+  },
+  "ore_coal": {
+    "id": "ore_coal",
+    "filename": "procedural",
+    "original_name": "Coal Deposit",
+    "display_name": "Coal Deposit",
+    "type": "world",
+    "category": "world/ore",
+    "path": null,
+    "game_path": "procedural://world/ore/coal",
+    "source_file": "src/world/OreNode.js",
+    "size": 0,
+    "ext": "procedural",
+    "tags": [
+      "ore",
+      "mining",
+      "level30"
+    ],
+    "description": "Coal deposit. Yields coal. Level 30 Mining. 50 XP.",
+    "source": "procedural",
+    "created_at": "2026-04-08T22:01:33.816774",
+    "glb_path": "/assets/models/ore/coal.glb",
+    "skill": "mining",
+    "level_req": 30,
+    "xp": 50,
+    "drops": [
+      "coal"
+    ]
+  },
+  "ore_solarite": {
+    "id": "ore_solarite",
+    "filename": "procedural",
+    "original_name": "Solarite Vein",
+    "display_name": "Solarite Vein",
+    "type": "world",
+    "category": "world/ore",
+    "path": null,
+    "game_path": "procedural://world/ore/solarite",
+    "source_file": "src/world/OreNode.js",
+    "size": 0,
+    "ext": "procedural",
+    "tags": [
+      "ore",
+      "mining",
+      "level55",
+      "rare"
+    ],
+    "description": "Solarite vein. Crystallised solar energy. Level 55 Mining. 80 XP.",
+    "source": "procedural",
+    "created_at": "2026-04-08T22:01:33.816777",
+    "glb_path": "/assets/models/ore/solarite.glb",
+    "skill": "mining",
+    "level_req": 55,
+    "xp": 80,
+    "drops": [
+      "solariteOre"
+    ]
+  },
+  "ore_heartstone": {
+    "id": "ore_heartstone",
+    "filename": "procedural",
+    "original_name": "Heartstone",
+    "display_name": "Heartstone",
+    "type": "world",
+    "category": "world/ore",
+    "path": null,
+    "game_path": "procedural://world/ore/heartstone",
+    "source_file": "src/world/OreNode.js",
+    "size": 0,
+    "ext": "procedural",
+    "tags": [
+      "ore",
+      "mining",
+      "level70",
+      "rare",
+      "rootweaver"
+    ],
+    "description": "Heartstone. Mycelial mineral, sacred to Rootweavers. Level 70 Mining. 95 XP.",
+    "source": "procedural",
+    "created_at": "2026-04-08T22:01:33.816779",
+    "glb_path": "/assets/models/ore/heartstone.glb",
+    "skill": "mining",
+    "level_req": 70,
+    "xp": 95,
+    "drops": [
+      "heartstoneOre"
+    ]
+  },
+  "gather_herb": {
+    "id": "gather_herb",
+    "filename": "procedural",
+    "original_name": "Herb Patch",
+    "display_name": "Herb Patch",
+    "type": "world",
+    "category": "world/gather",
+    "path": null,
+    "game_path": "procedural://world/gather/herb",
+    "source_file": "src/world/GatherNode.js",
+    "size": 0,
+    "ext": "procedural",
+    "tags": [
+      "gather",
+      "herb",
+      "chemistry"
+    ],
+    "description": "Medicinal herb cluster. Yields wild herbs for Chemistry. Respawns in 20s.",
+    "source": "procedural",
+    "created_at": "2026-04-08T22:01:33.816782",
+    "glb_path": "/assets/models/gather/herb.glb",
+    "skill": "gather",
+    "drops": [
+      "wildHerbs"
+    ]
+  },
+  "gather_fungi": {
+    "id": "gather_fungi",
+    "filename": "procedural",
+    "original_name": "Fungi Cluster",
+    "display_name": "Fungi Cluster",
+    "type": "world",
+    "category": "world/gather",
+    "path": null,
+    "game_path": "procedural://world/gather/fungi",
+    "source_file": "src/world/GatherNode.js",
+    "size": 0,
+    "ext": "procedural",
+    "tags": [
+      "gather",
+      "fungi",
+      "chemistry",
+      "rootweaver"
+    ],
+    "description": "Glowing fungi cluster. Yields fungal mass for Chemistry brews. Respawns in 25s.",
+    "source": "procedural",
+    "created_at": "2026-04-08T22:01:33.816784",
+    "glb_path": "/assets/models/gather/fungi.glb",
+    "skill": "gather",
+    "drops": [
+      "fungalMass"
+    ]
+  },
+  "foundryStation": {
+    "id": "foundryStation",
+    "filename": "procedural",
+    "original_name": "Foundry",
+    "display_name": "Foundry",
+    "type": "structure",
+    "category": "structures/stations",
+    "path": null,
+    "game_path": "procedural://structures/stations/foundry",
+    "source_file": "src/world/FoundryStation.js",
+    "size": 0,
+    "ext": "procedural",
+    "tags": [
+      "station",
+      "foundry",
+      "smelting"
+    ],
+    "description": "Smelting forge. Used to smelt ores into bars and ingots. Built from salvaged drone parts and river stone.",
+    "source": "procedural",
+    "created_at": "2026-04-08T22:01:33.816788",
+    "glb_path": "/assets/models/stations/foundry.glb"
+  },
+  "chemBench": {
+    "id": "chemBench",
+    "filename": "procedural",
+    "original_name": "Chemistry Bench",
+    "display_name": "Chemistry Bench",
+    "type": "structure",
+    "category": "structures/stations",
+    "path": null,
+    "game_path": "procedural://structures/stations/chemBench",
+    "source_file": "src/world/ChemBench.js",
+    "size": 0,
+    "ext": "procedural",
+    "tags": [
+      "station",
+      "chemistry",
+      "brewing"
+    ],
+    "description": "Chemistry bench with flasks and distiller. Used to brew potions and compounds.",
+    "source": "procedural",
+    "created_at": "2026-04-08T22:01:33.816790",
+    "glb_path": "/assets/models/stations/chemBench.glb"
+  },
+  "techBench": {
+    "id": "techBench",
+    "filename": "procedural",
+    "original_name": "Tech Bench",
+    "display_name": "Tech Bench",
+    "type": "structure",
+    "category": "structures/stations",
+    "path": null,
+    "game_path": "procedural://structures/stations/techBench",
+    "source_file": "src/world/TechBench.js",
+    "size": 0,
+    "ext": "procedural",
+    "tags": [
+      "station",
+      "tech",
+      "fabrication",
+      "solar-compact"
+    ],
+    "description": "Fabrication bench running on salvaged solar. Used to craft tech items and gadgets.",
+    "source": "procedural",
+    "created_at": "2026-04-08T22:01:33.816792",
+    "glb_path": "/assets/models/stations/techBench.glb"
+  },
+  "build_campfire": {
+    "id": "build_campfire",
+    "filename": "procedural",
+    "original_name": "Campfire",
+    "display_name": "Campfire",
+    "type": "structure",
+    "category": "structures/buildables",
+    "path": null,
+    "game_path": "procedural://structures/buildables/campfire",
+    "source_file": "src/world/BlueprintDefs.js",
+    "size": 0,
+    "ext": "procedural",
+    "tags": [
+      "buildable",
+      "construction",
+      "level1"
+    ],
+    "description": "Restores 2 HP per combat tick to nearby players. Cost: 5\u00d7 Normal Log.",
+    "source": "procedural",
+    "created_at": "2026-04-08T22:01:33.816795",
+    "level_req": 1,
+    "xp": 30
+  },
+  "build_leanTo": {
+    "id": "build_leanTo",
+    "filename": "procedural",
+    "original_name": "Lean-to",
+    "display_name": "Lean-to",
+    "type": "structure",
+    "category": "structures/buildables",
+    "path": null,
+    "game_path": "procedural://structures/buildables/leanTo",
+    "source_file": "src/world/BlueprintDefs.js",
+    "size": 0,
+    "ext": "procedural",
+    "tags": [
+      "buildable",
+      "construction",
+      "level10"
+    ],
+    "description": "+10% movement speed while nearby. Cost: 6\u00d7 Normal Log, 2\u00d7 Moss Log.",
+    "source": "procedural",
+    "created_at": "2026-04-08T22:01:33.816797",
+    "level_req": 10,
+    "xp": 55
+  },
+  "build_barricade": {
+    "id": "build_barricade",
+    "filename": "procedural",
+    "original_name": "Barricade",
+    "display_name": "Barricade",
+    "type": "structure",
+    "category": "structures/buildables",
+    "path": null,
+    "game_path": "procedural://structures/buildables/barricade",
+    "source_file": "src/world/BlueprintDefs.js",
+    "size": 0,
+    "ext": "procedural",
+    "tags": [
+      "buildable",
+      "construction",
+      "level20"
+    ],
+    "description": "Slows enemies that approach. Cost: 4\u00d7 Iron Log, 2\u00d7 Iron Bar.",
+    "source": "procedural",
+    "created_at": "2026-04-08T22:01:33.816799",
+    "level_req": 20,
+    "xp": 80
+  },
+  "build_watchtower": {
+    "id": "build_watchtower",
+    "filename": "procedural",
+    "original_name": "Watchtower",
+    "display_name": "Watchtower",
+    "type": "structure",
+    "category": "structures/buildables",
+    "path": null,
+    "game_path": "procedural://structures/buildables/watchtower",
+    "source_file": "src/world/BlueprintDefs.js",
+    "size": 0,
+    "ext": "procedural",
+    "tags": [
+      "buildable",
+      "construction",
+      "level35",
+      "solar-compact"
+    ],
+    "description": "Extends enemy detection range by 20 units. Cost: 8\u00d7 Iron Log, 4\u00d7 Steel Bar.",
+    "source": "procedural",
+    "created_at": "2026-04-08T22:01:33.816801",
+    "level_req": 35,
+    "xp": 110
+  },
+  "build_solarRelay": {
+    "id": "build_solarRelay",
+    "filename": "procedural",
+    "original_name": "Solar Relay",
+    "display_name": "Solar Relay",
+    "type": "structure",
+    "category": "structures/buildables",
+    "path": null,
+    "game_path": "procedural://structures/buildables/solarRelay",
+    "source_file": "src/world/BlueprintDefs.js",
+    "size": 0,
+    "ext": "procedural",
+    "tags": [
+      "buildable",
+      "construction",
+      "level50",
+      "solar-compact"
+    ],
+    "description": "Boosts attunement recharge by 30% in a large area. Cost: 4\u00d7 Solarite Ingot, 6\u00d7 Steel Bar.",
+    "source": "procedural",
+    "created_at": "2026-04-08T22:01:33.816803",
+    "level_req": 50,
+    "xp": 150
+  },
+  "build_rootNexus": {
+    "id": "build_rootNexus",
+    "filename": "procedural",
+    "original_name": "Root Nexus",
+    "display_name": "Root Nexus",
+    "type": "structure",
+    "category": "structures/buildables",
+    "path": null,
+    "game_path": "procedural://structures/buildables/rootNexus",
+    "source_file": "src/world/BlueprintDefs.js",
+    "size": 0,
+    "ext": "procedural",
+    "tags": [
+      "buildable",
+      "construction",
+      "level70",
+      "rootweaver",
+      "rare"
+    ],
+    "description": "Sacred mycelial site. HP regen + attunement boost. Cost: 4\u00d7 Heartstone Core, 8\u00d7 Ancient Log.",
+    "source": "procedural",
+    "created_at": "2026-04-08T22:01:33.816805",
+    "level_req": 70,
+    "xp": 220
+  }
+}
