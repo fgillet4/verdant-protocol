@@ -9,6 +9,8 @@ import { FoundryStation }   from './FoundryStation.js'
 import { ChemBench }        from './ChemBench.js'
 import { GatherNode }       from './GatherNode.js'
 import { TechBench }        from './TechBench.js'
+import { HorizonTerrain }   from './HorizonTerrain.js'
+import { LanternPost }      from './LanternPost.js'
 
 const ZONE_SIZE = 60      // world units each side
 const CELL_SIZE = 2       // navmesh cell size (2-unit cells → 30×30 grid)
@@ -51,6 +53,9 @@ export class World {
     // Build terrain
     this._buildTerrain()
     this._buildDecoration()
+
+    // Horizon extension — outer ring + billboard cylinder
+    this.horizonTerrain = new HorizonTerrain(scene, ZONE_SIZE)
 
     // Listen for debug object requests from other systems
     bus.on('world:add-debug-object',    ({ object }) => scene.add(object))
@@ -104,6 +109,8 @@ export class World {
     this._addTechBenches()
     // Gather nodes (herbs + fungi scattered across the zone)
     this._addGatherNodes(25, 20)
+    // Lantern posts — warm ambient light across the zone
+    this._addLanternPosts()
   }
 
   _addTrees(count) {
@@ -186,7 +193,7 @@ export class World {
       this.scene.add(bench.object)
       this.techBenches.set(id, bench)
       this.navmesh.blockAt(bench.position)
-      this.engine.addInteractableMesh(bench.object, id, 'techbench', 'Tech Bench')
+      this.engine.addInteractableMesh(bench.object, id, 'techbench', 'Tech Bench', { pos: bench.position.clone() })
     }
   }
 
@@ -200,7 +207,7 @@ export class World {
       this.scene.add(bench.object)
       this.chemBenches.set(id, bench)
       this.navmesh.blockAt(bench.position)
-      this.engine.addInteractableMesh(bench.object, id, 'chembench', 'Chemistry Bench')
+      this.engine.addInteractableMesh(bench.object, id, 'chembench', 'Chemistry Bench', { pos: bench.position.clone() })
     }
   }
 
@@ -238,8 +245,30 @@ export class World {
       this.scene.add(station.object)
       this.foundryStations.set(id, station)
       this.navmesh.blockAt(station.position)
-      this.engine.addInteractableMesh(station.object, id, 'foundry', 'Foundry')
+      this.engine.addInteractableMesh(station.object, id, 'foundry', 'Foundry', { pos: station.position.clone() })
     }
+  }
+
+  _addLanternPosts() {
+    // Fixed positions — near benches, along implied paths, and at zone edges
+    const spots = [
+      // Near spawn centre
+      [  4,  0 ], [ -4,  0 ],
+      // Near foundry stations
+      [ 11, -8 ], [ 17, -12 ], [ -14, 10 ], [ -18, 15 ],
+      // Near chem benches
+      [  6, 17 ], [ -22, -13 ],
+      // Near tech benches
+      [ -8, 19 ], [ 20, -16 ],
+      // Mid-zone connectors
+      [  0, -20 ], [ 20,  10 ], [ -20,  0 ], [  0,  22 ],
+    ]
+    for (const [x, z] of spots) {
+      const lantern = new LanternPost(x, z)
+      this.scene.add(lantern.object)
+    }
+
+    // Per-lantern lights handle illumination — no shared cluster lights needed.
   }
 
   _addMushrooms(count) {

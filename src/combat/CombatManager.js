@@ -3,6 +3,9 @@ import { DamageCalc } from './DamageCalc.js'
 
 export const COMBAT_TICK_MS = 600
 
+/** Max distance (world units) for melee styles. One tile = 2 units; allow slight overlap. */
+const MELEE_RANGE = 2.5
+
 /**
  * CombatManager — owns the 600ms combat tick (OSRS-style).
  * Entities register with it. Combat starts via events or direct API.
@@ -118,6 +121,21 @@ export class CombatManager {
       if (!attacker || !defender) continue
       if (defender.stats.hp <= 0) continue
 
+      // Resolve style early — needed for the range check below
+      const atkStyle = attacker.equipment?.weaponStyle
+                    ?? attacker.stats.combatStyle
+                    ?? 'biomech'
+
+      // Melee range gate — skip tick if too far, pair stays active
+      if (atkStyle !== 'marksmanship') {
+        const ap = attacker.object?.position
+        const dp = defender.object?.position
+        if (ap && dp) {
+          const dx = ap.x - dp.x, dz = ap.z - dp.z
+          if (Math.sqrt(dx * dx + dz * dz) > MELEE_RANGE) continue
+        }
+      }
+
       let damage = DamageCalc.roll(attacker, defender)
 
       // Attunement: damage multiplier (player-only)
@@ -139,11 +157,6 @@ export class CombatManager {
         const dot = this._attu.getOnHitDoT()
         if (dot) this.addDoT(pair.defenderId, dot.damage, dot.ticks)
       }
-
-      // Resolve actual style used (equipment weapon overrides base style)
-      const atkStyle = attacker.equipment?.weaponStyle
-                    ?? attacker.stats.combatStyle
-                    ?? 'biomech'
 
       bus.emit('combat:tick', {
         attackerId: pair.attackerId,

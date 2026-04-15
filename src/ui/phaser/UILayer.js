@@ -30,6 +30,9 @@ export class UILayer {
 
   // ── Public API ─────────────────────────────────────────────────────────────
 
+  /** Apply persisted settings immediately (call once after all bus listeners are registered). */
+  applySettings() { this._panel._apply() }
+
   toggle() { this._open ? this.close() : this.open() }
 
   open() {

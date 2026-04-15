@@ -127,11 +127,6 @@ export class Chemistry {
   }
 
   _setStatus(text) {
-    const el = document.getElementById('status')
-    if (el) {
-      el.textContent = text
-      clearTimeout(el._chemTimer)
-      el._chemTimer = setTimeout(() => { el.textContent = '' }, 5000)
-    }
+    bus.emit('ui:examine', { text })
   }
 }

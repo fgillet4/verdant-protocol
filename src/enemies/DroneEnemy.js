@@ -58,7 +58,6 @@ export class DroneEnemy {
     bus.on('combat:death', ({ entityId }) => { if (entityId === this.id) this._die() })
     bus.on('combat:tick',  ({ targetId })  => {
       if (targetId !== this.id) return
-      this._flashDamage()
       // Retaliate — enter chase when first hit by the player
       if (this._state === STATE.WANDER) this._enterChase()
     })
@@ -160,15 +159,4 @@ export class DroneEnemy {
     }, 800)
   }
 
-  _flashDamage() {
-    if (this._state === STATE.DEAD) return
-    this._bodyMat.emissive.setHex(0xffffff)
-    this._bodyMat.emissiveIntensity = 2.0
-    setTimeout(() => {
-      if (this._state !== STATE.DEAD) {
-        this._bodyMat.emissive.setHex(0x000000)
-        this._bodyMat.emissiveIntensity = 0
-      }
-    }, 80)
-  }
 }

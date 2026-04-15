@@ -130,6 +130,7 @@ export class ChatLog {
       if (!text) { input.blur(); return }
       input.value = ''
       bus.emit('chat:message', { playerId: 'player', text })
+      bus.emit('chat:send-local', { text })   // relay to multiplayer server
       this.post('chat', `<span style="color:#76ff03">You:</span> ${_esc(text)}`)
       input.blur()
     }
@@ -230,16 +231,7 @@ export class ChatLog {
       this._input.focus()
     })
 
-    // Game channel — skill actions
-    bus.on('skill:action', ({ type, target }) => {
-      if (type === 'woodcutting') {
-        const name = target?.label ?? 'tree'
-        this.post('game', `You start cutting the <span style="color:#a5d6a7">${_esc(name)}</span>...`)
-      } else if (type === 'mining') {
-        const name = target?.label ?? 'ore'
-        this.post('game', `You start mining the <span style="color:#90a4ae">${_esc(name)}</span>...`)
-      }
-    })
+    // Game channel — skill actions (begin/level-fail messages come via ui:examine from the skill system)
 
     bus.on('skill:xp-gained', ({ skillId, amount }) => {
       // Only log meaningful integer drops, not every passive tick
@@ -270,13 +262,8 @@ export class ChatLog {
       this.post('game', `You receive: <span style="color:#a5d6a7">${item.name}</span> x${item.quantity ?? 1}`)
     })
 
-    bus.on('foundry:smelt-complete', ({ recipeId, outputItem }) => {
-      this.post('game', `You smelt <span style="color:#ff8a65">${outputItem.name}</span>.`)
-    })
-
-    bus.on('chemistry:craft-complete', ({ recipeId, outputItem }) => {
-      this.post('game', `You brew <span style="color:#00e676">${outputItem.name}</span>.`)
-    })
+    // foundry:smelt-complete and chemistry:craft-complete omitted —
+    // inventory:item-received already announces each output item.
 
     bus.on('tech:fabricate-complete', ({ recipeId }) => {
       this.post('game', `Fabrication complete: <span style="color:#00bcd4">${_title(recipeId)}</span>.`)

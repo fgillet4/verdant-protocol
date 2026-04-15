@@ -1,5 +1,9 @@
 import * as THREE          from 'three'
 import { ClickRaycaster }  from './ClickRaycaster.js'
+import { SkySystem }       from './SkySystem.js'
+import { PostFX }          from './PostFX.js'
+import { DayCycle }        from './DayCycle.js'
+import { CloudLayer }      from './CloudLayer.js'
 
 // Camera orbit constants
 const CAM_RADIUS_INIT = 25         // starting distance from player
@@ -23,19 +27,21 @@ export class Engine {
     this.container = container
 
     // ── Renderer ────────────────────────────────────────────────────────────
-    this.renderer = new THREE.WebGLRenderer({ antialias: true })
+    // antialias: false — PostFX uses SMAA instead. renderer MSAA + EffectComposer
+    // HalfFloat blit causes glBlitFramebuffer depth-stencil conflict every frame.
+    this.renderer = new THREE.WebGLRenderer({ antialias: false })
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     this.renderer.setSize(container.clientWidth, container.clientHeight)
     this.renderer.shadowMap.enabled = true
     this.renderer.shadowMap.type    = THREE.PCFSoftShadowMap
-    this.renderer.toneMapping       = THREE.ACESFilmicToneMapping
-    this.renderer.toneMappingExposure = 1.2
+    // ACES filmic on the renderer — SkySystem will vary exposure per preset
+    this.renderer.toneMapping         = THREE.ACESFilmicToneMapping
+    this.renderer.toneMappingExposure = 0.5
     container.appendChild(this.renderer.domElement)
 
     // ── Scene ────────────────────────────────────────────────────────────────
     this.scene = new THREE.Scene()
-    this.scene.background = new THREE.Color(0x1a2e1a)
-    this.scene.fog = new THREE.Fog(0x1a2e1a, 40, 120)
+    // Background and fog are managed by SkySystem — set after lighting
 
     // ── Camera ───────────────────────────────────────────────────────────────
     const aspect = container.clientWidth / container.clientHeight
@@ -73,8 +79,23 @@ export class Engine {
       this._keys.delete(key)
     })
 
-    // ── Lighting ─────────────────────────────────────────────────────────────
+    // ── Lighting + Sky ───────────────────────────────────────────────────────
     this._buildLighting()
+    this.skySystem = new SkySystem(this.scene, this.renderer, this._sunLight, this._ambientLight)
+
+    // ── Clouds + Post-processing ─────────────────────────────────────────────
+    this.cloudLayer = new CloudLayer(this.scene)
+    this.postFX     = new PostFX(this.renderer, this.scene, this.camera)
+    this.dayCycle   = new DayCycle(this.skySystem)
+
+    // Bloom scales with sun elevation (UnrealBloomPass strength, 0–1 range):
+    //   sunset (6°)  → 1.0, noon (55°) → 0.3
+    this.skySystem.onElevationChange = (elev) => {
+      const t = Math.max(0, Math.min(1, (elev - 6) / 49))
+      this.postFX.setBloomIntensity(1.0 - 0.7 * t)
+      this.postFX.setGodRaysWeight(0)  // no-op
+      this._lastSunElevation = elev
+    }
 
     // ── Raycaster (click-to-move + enemy targeting) ──────────────────────────
     this._raycaster = new ClickRaycaster(this.renderer, this.camera)
@@ -87,22 +108,24 @@ export class Engine {
   }
 
   _buildLighting() {
-    this.scene.add(new THREE.AmbientLight(0x4a6741, 0.8))
+    this._ambientLight = new THREE.AmbientLight(0x4a6741, 0.8)
+    this.scene.add(this._ambientLight)
 
-    const sun = new THREE.DirectionalLight(0xfff4e0, 2.0)
-    sun.position.set(30, 50, 20)
-    sun.castShadow = true
-    sun.shadow.mapSize.set(2048, 2048)
-    sun.shadow.camera.near   = 0.5
-    sun.shadow.camera.far    = 200
-    sun.shadow.camera.left   = -60
-    sun.shadow.camera.right  = 60
-    sun.shadow.camera.top    = 60
-    sun.shadow.camera.bottom = -60
-    sun.shadow.bias = -0.0005
-    this.scene.add(sun)
+    // SkySystem will drive position and color from the sun angle
+    this._sunLight = new THREE.DirectionalLight(0xfff4e0, 2.0)
+    this._sunLight.castShadow = true
+    this._sunLight.shadow.mapSize.set(2048, 2048)
+    this._sunLight.shadow.camera.near   = 0.5
+    this._sunLight.shadow.camera.far    = 200
+    this._sunLight.shadow.camera.left   = -60
+    this._sunLight.shadow.camera.right  = 60
+    this._sunLight.shadow.camera.top    = 60
+    this._sunLight.shadow.camera.bottom = -60
+    this._sunLight.shadow.bias = -0.0005
+    this.scene.add(this._sunLight)
 
-    const fill = new THREE.DirectionalLight(0x7ab8e8, 0.4)
+    // Cool sky-fill light from the opposite direction — stays fixed
+    const fill = new THREE.DirectionalLight(0x7ab8e8, 0.3)
     fill.position.set(-20, 10, -30)
     this.scene.add(fill)
   }
@@ -162,7 +185,25 @@ export class Engine {
       this.camera.lookAt(this._cameraTarget)
     }
 
-    this.renderer.render(this.scene, this.camera)
+    this.dayCycle.update(delta)
+    this.cloudLayer.update(delta, this._lastSunElevation ?? 18)
+    if (this._postFXEnabled !== false) {
+      this.postFX.render(delta)
+    } else {
+      this.renderer.render(this.scene, this.camera)
+    }
+  }
+
+  /** Toggle bloom/SMAA composer. Off = plain renderer.render() — significant perf win. */
+  setPostFX(enabled) {
+    this._postFXEnabled = enabled
+  }
+
+  /** Apply renderer pixel ratio at runtime. */
+  setPixelRatio(ratio) {
+    this.renderer.setPixelRatio(ratio)
+    const { width, height } = this.renderer.getDrawingBufferSize(new THREE.Vector2())
+    this.postFX.resize(width, height)
   }
 
   _handleCameraKeys(delta) {
@@ -197,8 +238,8 @@ export class Engine {
     this._orbitLast = { x: e.clientX, y: e.clientY }
 
     const sensitivity = 0.005
-    this._camTheta += dx * sensitivity
-    this._camPhi    = Math.max(CAM_PHI_MIN, Math.min(CAM_PHI_MAX, this._camPhi + dy * sensitivity))
+    this._camTheta -= dx * sensitivity
+    this._camPhi    = Math.max(CAM_PHI_MIN, Math.min(CAM_PHI_MAX, this._camPhi - dy * sensitivity))
     this._updateCameraOffset()
   }
 
@@ -230,6 +271,7 @@ export class Engine {
     this.camera.aspect = w / h
     this.camera.updateProjectionMatrix()
     this.renderer.setSize(w, h)
+    this.postFX.resize(w, h)
   }
 
   dispose() {

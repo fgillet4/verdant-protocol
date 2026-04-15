@@ -74,6 +74,32 @@
       font-size: 8px; opacity: 0.28; letter-spacing: 0.12em;
     }
 
+    /* ── FPS counter (above minimap) ────────────────────────────────────── */
+    #fps-counter {
+      position: absolute; top: 4px; right: 18px;
+      font-size: 9px; letter-spacing: 0.06em; opacity: 0.45;
+      pointer-events: none;
+    }
+    #fps-counter.slow  { color: #ef5350; opacity: 0.7; }
+    #fps-counter.ok    { color: #fff176; opacity: 0.55; }
+    #fps-counter.fast  { color: #a5d6a7; opacity: 0.45; }
+
+    /* ── Day/Night orb (left of minimap) ────────────────────────────────── */
+    #day-cycle-wrap {
+      position: absolute; top: 16px; right: 192px;
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      pointer-events: none;
+    }
+    #day-cycle-orb {
+      border-radius: 50%;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.5), 0 2px 12px rgba(0,0,0,0.4);
+      display: block;
+    }
+    #day-cycle-label {
+      font-size: 8px; letter-spacing: 0.1em; opacity: 0.55;
+      text-transform: uppercase;
+    }
+
     /* ── Full map modal ──────────────────────────────────────────────────── */
     #map-modal {
       position: absolute; inset: 0; background: rgba(0,0,0,0.82);
@@ -221,14 +247,7 @@
       100% { opacity: 0; transform: translateX(6px); }
     }
 
-    /* ── Status bar (bottom-centre) ──────────────────────────────────────── */
-    #status {
-      position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-      background: rgba(0,0,0,0.55); padding: 7px 18px; border-radius: 20px;
-      font-size: 12px; letter-spacing: 0.04em; opacity: 0.8;
-    }
-
-    /* ── Coords ───────────────────────────────────────────────────────────── */
+/* ── Coords ───────────────────────────────────────────────────────────── */
     #coords {
       position: absolute; bottom: 42px; left: 16px;
       font-size: 10px; opacity: 0.3;
@@ -317,6 +336,9 @@
       background:rgba(76,175,80,0.2);
     }
     input[type=range]:focus { outline:none; }
+
+    /* ── Login modal password dots ───────────────────────────────────────── */
+    input[type=password] { color: #c8e6c9 !important; }
   </style>
 </head>
 <body>
@@ -353,7 +375,6 @@
 
     <div id="loot-log"></div>
     <div id="coords"></div>
-    <div id="status">Move: click · Attack: click drone · Camera: WASD · Skills: Tab · Inventory: I · Attunements: Z</div>
     <div id="click-indicator"></div>
     <div id="damage-numbers"></div>
 

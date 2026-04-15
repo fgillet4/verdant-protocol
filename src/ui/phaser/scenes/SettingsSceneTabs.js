@@ -99,6 +99,7 @@ export function buildGraphicsTab(sc, cx, cy, cw) {
     x => x.toFixed(2) + '×', sc._onSet) + 8
   cy = divider(sc, cx, cy, cw)
   cy = sectionTitle(sc, cx, cy, 'Features') + 4
+  cy = toggleRow(sc, cx, cy, cw, 'Dynamic Sky', 'dynamicSky', sc._onSet) + 4
   cy = toggleRow(sc, cx, cy, cw, 'Shadows', 'shadows', sc._onSet) + 4
   cy = toggleRow(sc, cx, cy, cw, 'Antialiasing (needs reload)', 'antialiasing', sc._onSet) + 4
   cy = toggleRow(sc, cx, cy, cw, 'Show FPS Counter', 'showFPS', sc._onSet) + 4

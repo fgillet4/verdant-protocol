@@ -48,7 +48,7 @@ export class HUD {
         if (this._targetPanel) this._targetPanel.style.display = 'none'
       }
       if (entityId === 'player') {
-        document.getElementById('status').textContent = 'You have fallen...'
+        bus.emit('ui:examine', { text: 'You have fallen...' })
       }
     })
 

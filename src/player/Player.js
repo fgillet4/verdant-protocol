@@ -3,6 +3,9 @@ import { bus } from '../utils/EventBus.js'
 import { PathFollower } from '../pathfinding/PathFollower.js'
 import { GridNav } from '../pathfinding/GridNav.js'
 
+const MELEE_RANGE     = 2.5  // world units — one tile
+const REPATH_INTERVAL = 0.5  // seconds between chase re-paths
+
 // Shared path-dot geometry (flat circle on the ground)
 const _DOT_GEO = new THREE.CircleGeometry(0.14, 8)
 _DOT_GEO.rotateX(-Math.PI / 2)
@@ -41,9 +44,22 @@ export class Player {
     /** @type {THREE.Mesh[]} */
     this._dots = []
 
+    // ── Chase state ───────────────────────────────────────────────────────
+    /** @type {{ id: string, getPos: () => THREE.Vector3 } | null} */
+    this._chase       = null
+    this._repathTimer = 0
+
+    // ── Walk-to state (one-shot approach, e.g. benches) ───────────────────
+    /** @type {{ targetPos: THREE.Vector3, onInRange: Function, reach: number } | null} */
+    this._walkTo = null
+
     // ── Listen for events ─────────────────────────────────────────────────
-    bus.on('player:click-move', ({ worldPos }) => this._moveTo(worldPos))
+    bus.on('player:click-move', ({ worldPos, _internal }) => {
+      if (!_internal) { this._clearChase(); this._walkTo = null }
+      this._moveTo(worldPos)
+    })
     bus.on('player:arrived',    () => this._onArrive())
+    bus.on('combat:death',      ({ entityId }) => { if (this._chase?.id === entityId) this._clearChase() })
   }
 
   _buildMesh() {
@@ -65,26 +81,60 @@ export class Player {
   }
 
   /**
+   * Begin chasing an entity for melee combat.
+   * Re-paths every REPATH_INTERVAL until within MELEE_RANGE, then stops moving.
+   * @param {string} id — enemy entity id (cleared on combat:death)
+   * @param {() => THREE.Vector3} getPos — live position getter
+   */
+  chaseTarget(id, getPos) {
+    this._chase       = { id, getPos }
+    this._repathTimer = REPATH_INTERVAL  // trigger immediate path on first update
+  }
+
+  _clearChase() {
+    this._chase       = null
+    this._repathTimer = 0
+  }
+
+  /**
+   * Walk to a position and fire a callback once within reach.
+   * Cancelled if the player manually clicks elsewhere.
+   * @param {THREE.Vector3} targetPos
+   * @param {Function} onInRange
+   * @param {number} [reach=2.5]
+   */
+  walkTo(targetPos, onInRange, reach = 2.5) {
+    this._clearChase()
+    this._walkTo = { targetPos, onInRange, reach }
+    this._moveTo(targetPos)
+  }
+
+  /**
    * Handle a click-move request.
    * @param {THREE.Vector3} worldPos
    */
   _moveTo(worldPos) {
     const waypoints = this.navmesh.findPath(this.object.position, worldPos)
-    if (!waypoints || waypoints.length < 2) {
+    if (!waypoints || waypoints.length === 0) {
       console.warn('[Player] No path found')
+      return
+    }
+    if (waypoints.length === 1) {
+      // Already at destination cell — fire arrival immediately
+      this._onArrive()
+      if (this._walkTo) {
+        const { onInRange } = this._walkTo
+        this._walkTo = null
+        onInRange()
+      }
       return
     }
 
     this.follower.setPath(waypoints)
     this._drawDots(waypoints)
-
-    const statusEl = document.getElementById('status')
-    if (statusEl) statusEl.textContent = 'Walking...'
   }
 
   _onArrive() {
-    const statusEl = document.getElementById('status')
-    if (statusEl) statusEl.textContent = 'Click the ground to move'
     this._clearDots()
   }
 
@@ -119,6 +169,33 @@ export class Player {
    * @param {number} delta
    */
   update(delta) {
+    // Walk-to — one-shot approach (benches, interactables)
+    if (this._walkTo) {
+      const { targetPos, onInRange, reach } = this._walkTo
+      const dx = this.object.position.x - targetPos.x
+      const dz = this.object.position.z - targetPos.z
+      if (Math.sqrt(dx * dx + dz * dz) <= reach) {
+        this._walkTo = null
+        onInRange()
+      }
+    }
+
+    // Chase — re-path toward target while outside melee range
+    if (this._chase) {
+      this._repathTimer += delta
+      if (this._repathTimer >= REPATH_INTERVAL) {
+        this._repathTimer = 0
+        const targetPos = this._chase.getPos()
+        const dx = this.object.position.x - targetPos.x
+        const dz = this.object.position.z - targetPos.z
+        if (Math.sqrt(dx * dx + dz * dz) > MELEE_RANGE) {
+          this._moveTo(targetPos)
+        } else {
+          this.follower.stop()
+        }
+      }
+    }
+
     this.follower.update(delta)
 
     const coordEl = document.getElementById('coords')

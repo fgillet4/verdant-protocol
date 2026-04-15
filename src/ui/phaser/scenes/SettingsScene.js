@@ -12,7 +12,7 @@ const LS_KEY  = 'vp_settings'
 export const DEFAULTS = {
   masterVolume: 0.8, musicVolume: 0.6, sfxVolume: 0.8, ambientVolume: 0.5,
   pixelRatio: Math.min(window.devicePixelRatio, 2),
-  shadows: true, antialiasing: true, showFPS: false, showCoords: true,
+  shadows: true, antialiasing: true, dynamicSky: true, showFPS: false, showCoords: true,
   minimapSize: 160, chatOpacity: 0.82, uiScale: 1.0,
 }
 
@@ -155,6 +155,10 @@ export class SettingsScene extends Phaser.Scene {
   _apply() {
     const s = this._cfg, engine = this.reg('engine'), r = engine?.renderer
     if (r) { r.setPixelRatio(s.pixelRatio); r.shadowMap.enabled = s.shadows }
+
+    const dayCycle = this.reg('dayCycle')
+    if (engine?.skySystem) engine.skySystem.setDynamic(s.dynamicSky)
+    if (dayCycle) dayCycle.paused = !s.dynamicSky
 
     const coords  = document.getElementById('coords')
     if (coords) coords.style.display = s.showCoords ? '' : 'none'

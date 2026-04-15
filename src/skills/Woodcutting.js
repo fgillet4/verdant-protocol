@@ -8,7 +8,7 @@ import { bus }        from '../utils/EventBus.js'
 import { createItem } from '../inventory/ItemDefs.js'
 
 const CHOP_TICK_MS = 2400   // base interval between success rolls
-const CHOP_REACH   = 4.5    // max distance to start chopping
+const CHOP_REACH   = 3.5    // covers diagonal navmesh cell (cellSize×√2 ≈ 2.83)
 
 export class Woodcutting {
   /**
@@ -22,9 +22,8 @@ export class Woodcutting {
     this._trees     = trees
 
     this._activeTree  = null   // Tree currently targeted
-    this._chopping    = false  // are we in the chop loop?
     this._chopTimer   = 0      // accumulator in seconds
-    this._walking     = false  // walking toward tree
+    this._started     = false  // whether "You begin chopping..." has shown
 
     bus.on('skill:action', ({ type, target }) => {
       if (type !== 'woodcutting') return
@@ -46,13 +45,14 @@ export class Woodcutting {
 
     const dist = this._player.position.distanceTo(tree.position)
 
-    if (dist > CHOP_REACH) {
-      // Still walking — nothing to do here, Player handles movement
-      return
+    if (dist > CHOP_REACH) return  // still walking
+
+    // First tick in range — show begin message
+    if (!this._started) {
+      this._started = true
+      this._setStatus(`You begin chopping the ${tree.tier?.name ?? 'tree'}.`)
     }
 
-    // In range — start/continue chopping
-    this._walking = false
     this._chopTimer += delta
 
     if (this._chopTimer >= CHOP_TICK_MS / 1000) {
@@ -70,17 +70,18 @@ export class Woodcutting {
     // Level gate — check tier requirement before walking
     const level   = this._player.stats?.skills?.woodcutting?.level ?? 1
     const minLvl  = tree.tier?.minLevel ?? 1
+    const treeName = tree.tier?.name ?? 'tree'
     if (level < minLvl) {
-      this._setStatus(`You need level ${minLvl} Woodcutting to chop this tree.`)
+      this._setStatus(`You need level ${minLvl} Woodcutting to chop the ${treeName}.`)
       return
     }
 
     this._activeTree = tree
     this._chopTimer  = 0
-    this._walking    = true
+    this._started    = false
 
     bus.emit('player:click-move', { worldPos: tree.position.clone(), _internal: true })
-    this._setStatus(`Walking to ${tree.tier?.name ?? 'tree'}...`)
+    this._setStatus(`Walking to ${treeName}...`)
   }
 
   _rollChop(tree) {
@@ -111,12 +112,10 @@ export class Woodcutting {
   _cancel() {
     this._activeTree = null
     this._chopTimer  = 0
-    this._walking    = false
+    this._started    = false
   }
 
   _setStatus(text) {
-    const el = document.getElementById('status')
-    if (!el) return
-    el.textContent = text
+    bus.emit('ui:examine', { text })
   }
 }

@@ -66,7 +66,8 @@ export class Minimap {
    */
   _updateCompass() {
     if (!this._cardinals) return
-    const cx = 80, cy = 80, r = 76   // wrap is 160×160 CSS px
+    const sz = this._wrap.offsetWidth || 160
+    const cx = sz / 2, cy = sz / 2, r = sz / 2 - 4
     for (const el of this._cardinals) {
       const a = this._camTheta + el._offset
       el.style.left      = (cx + Math.sin(a) * r) + 'px'

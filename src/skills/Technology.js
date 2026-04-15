@@ -128,11 +128,6 @@ export class Technology {
   }
 
   _setStatus(text) {
-    const el = document.getElementById('status')
-    if (el) {
-      el.textContent = text
-      clearTimeout(el._techTimer)
-      el._techTimer = setTimeout(() => { el.textContent = '' }, 5000)
-    }
+    bus.emit('ui:examine', { text })
   }
 }

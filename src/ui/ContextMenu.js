@@ -120,6 +120,17 @@ export class ContextMenu {
       },
     ]
 
+    if (target.type === 'groundItem') return [
+      {
+        html: `<span style="color:#69f0ae">Take</span> <span style="color:#ffff64">${name}</span>`,
+        action: () => bus.emit('world:interact', { entityId: target.entityId, type: 'groundItem' }),
+      },
+      {
+        html: `<span style="color:#fff">Examine</span> <span style="color:#ffff64">${name}</span>`,
+        action: () => bus.emit('ui:examine', { text: `${name}. On the ground.` }),
+      },
+    ]
+
     if (target.type === 'item') {
       const item = target.item
       const opts = []

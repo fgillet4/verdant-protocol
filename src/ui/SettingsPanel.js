@@ -11,7 +11,7 @@ const LS_KEY = 'vp_settings'
 export const DEFAULTS = {
   masterVolume: 0.8, musicVolume: 0.6, sfxVolume: 0.8, ambientVolume: 0.5,
   pixelRatio: Math.min(window.devicePixelRatio, 2),
-  shadows: true, antialiasing: true, showFPS: false, showCoords: true,
+  postProcessing: true, shadows: true, antialiasing: true, dynamicSky: true, showFPS: false, showCoords: true,
   minimapSize: 160, chatOpacity: 0.82, uiScale: 1.0,
 }
 
@@ -127,6 +127,28 @@ export class SettingsPanel {
     side.appendChild(spacer)
 
     // Exit button
+    // Logout button (only shown when logged in)
+    if (localStorage.getItem('fs_token')) {
+      const logoutBtn = document.createElement('button')
+      logoutBtn.textContent = 'Log Out'
+      logoutBtn.style.cssText = [
+        'width:100%;padding:9px 14px;margin-bottom:6px;',
+        'background:transparent;border:1px solid rgba(255,193,7,0.3);',
+        'border-radius:5px;color:#ffd54f;font-family:"Courier New",monospace;',
+        'font-size:11px;text-align:left;cursor:pointer;letter-spacing:0.05em;',
+        'transition:background 0.15s;',
+      ].join('')
+      logoutBtn.addEventListener('mouseenter', () => { logoutBtn.style.background = 'rgba(255,193,7,0.08)' })
+      logoutBtn.addEventListener('mouseleave', () => { logoutBtn.style.background = 'transparent' })
+      logoutBtn.addEventListener('click', () => {
+        if (confirm('Log out of FrankStation? Your progress has been saved.')) {
+          localStorage.removeItem('fs_token')
+          location.reload()
+        }
+      })
+      side.appendChild(logoutBtn)
+    }
+
     const exitBtn = document.createElement('button')
     exitBtn.textContent = 'Exit to Menu'
     exitBtn.style.cssText = [
@@ -267,7 +289,7 @@ export class SettingsPanel {
   }
 
   _toggleRow(label, key) {
-    const row = document.createElement('label')
+    const row = document.createElement('div')
     row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;cursor:pointer;'
 
     const lbl = document.createElement('span')
@@ -343,8 +365,10 @@ export class SettingsPanel {
     this._sliderRow('Pixel Ratio', 'pixelRatio', 0.5, 2, 0.25, x => x.toFixed(2)+'×')
     this._divider()
     this._sectionTitle('Features')
-    this._toggleRow('Shadows',                   'shadows')
-    this._toggleRow('Antialiasing (needs reload)','antialiasing')
+    this._toggleRow('Post Processing (Bloom)',    'postProcessing')
+    this._toggleRow('Dynamic Sky',                'dynamicSky')
+    this._toggleRow('Shadows',                    'shadows')
+    this._toggleRow('Antialiasing (needs reload)', 'antialiasing')
     this._toggleRow('Show FPS Counter',           'showFPS')
     this._toggleRow('Show Coordinates',           'showCoords')
     this._divider()
@@ -423,17 +447,7 @@ export class SettingsPanel {
     const coords = document.getElementById('coords')
     if (coords) coords.style.display = s.showCoords ? '' : 'none'
 
-    let fpsEl = document.getElementById('fps-counter')
-    if (s.showFPS && !fpsEl) {
-      fpsEl = Object.assign(document.createElement('div'), { id: 'fps-counter' })
-      fpsEl.style.cssText = 'position:fixed;top:4px;left:50%;transform:translateX(-50%);font-size:9px;opacity:0.4;font-family:"Courier New",monospace;pointer-events:none;z-index:900;color:#76ff03;'
-      document.body.appendChild(fpsEl)
-      let fr = 0, last = performance.now()
-      const tick = () => { fr++; const n = performance.now(); if (n-last >= 1000) { fpsEl.textContent = fr+' fps'; fr=0; last=n }; requestAnimationFrame(tick) }
-      requestAnimationFrame(tick)
-    } else if (!s.showFPS) fpsEl?.remove()
-
-    const sz = s.minimapSize
+const sz = s.minimapSize
     document.getElementById('minimap-canvas')?.setAttribute('style', `width:${sz}px;height:${sz}px`)
     const mmw = document.getElementById('minimap-wrap')
     if (mmw) { mmw.style.width = sz+'px'; mmw.style.height = sz+'px' }

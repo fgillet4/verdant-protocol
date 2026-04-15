@@ -207,8 +207,7 @@ export class Marksmanship {
   // ── Helpers ───────────────────────────────────────────────────────────────
 
   _status(text) {
-    const el = document.getElementById('status')
-    if (el) { el.textContent = text; clearTimeout(el._mrkTimer); el._mrkTimer = setTimeout(() => { el.textContent = '' }, 3000) }
+    bus.emit('ui:examine', { text })
   }
 
   /** Cooldown remaining for an ability (0 = ready). */

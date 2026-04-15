@@ -146,16 +146,13 @@ export class ClickRaycaster {
         bus.emit('skill:action', { type: 'gather', target: rec })
         break
       case 'foundry':
-        bus.emit('player:click-move', { worldPos: hitPoint, _internal: true })
-        bus.emit('ui:open-foundry', { stationId: rec.entityId })
-        break
       case 'chembench':
-        bus.emit('player:click-move', { worldPos: hitPoint, _internal: true })
-        bus.emit('ui:open-chemistry', { benchId: rec.entityId })
-        break
       case 'techbench':
-        bus.emit('player:click-move', { worldPos: hitPoint, _internal: true })
-        bus.emit('ui:open-tech', { benchId: rec.entityId })
+        bus.emit('player:approach-interact', {
+          interactType: rec.type,
+          id:  rec.entityId,
+          pos: rec.meta?.pos ?? hitPoint,
+        })
         break
       default:
         bus.emit('world:interact', { entityId: rec.entityId, type: rec.type })
